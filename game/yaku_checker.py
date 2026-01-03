@@ -2,15 +2,23 @@ from game.tiles import Suit, Tile, split_hand
 from typing import List
 
 yaku_1han = ["All simples", "Riichi", "Ippatsu", "Prevalent wind", "Seat wind", "White dragon", "Green dragon",
-             "Red dragon", "After a kan", "Under the sea", "Tsumo", "Pure double sequence", "Pinfu"]
+             "Red dragon", "After a kan", "Under the sea", "Tsumo", "Pure double sequence", "Pinfu",
+             "Under the river"]
 yaku_2han = ["All triplets", "Triple triplets", "Mixed triple sequence", "Three quads", "Little three dragons",
-             "Pure straight", "Seven pairs", "All terminals and honors", "Half outside hand", "Double riichi"]
+             "Pure straight", "Seven pairs", "All terminals and honors", "Half outside hand", "Double riichi",
+             "Three concealed triplets"]
 yaku_3han = ["Half flush", "Twice pure double sequence", "Fully outside hand"]
 yaku_4han = ["Mangan at draw"]  # special case
 yaku_6han = ["Full flush"]
 yakuman_list = ["Thirteen orphans", "Four quads", "Big three dragons",
-                "Four little winds", "Blessing of heaven", "Nine gates", "All honors", "All green", "All terminals"]
-double_yakuman_list = ["Four big winds", "Thirteen-wait thirteen orphans", "True nine gates"]
+                "Four little winds", "Blessing of heaven", "Nine gates", "All honors", "All green", "All terminals",
+                "Four concealed triplets", "Blessing of earth"]
+double_yakuman_list = ["Four big winds", "Thirteen-wait thirteen orphans", "True nine gates",
+                       "Single-wait four concealed triplets"]
+
+yakus_cheaper_open_list = ["Half flush", "Full flush", "Half outside hand", "Fully outside hand", "Pure straight",
+                           "Mixed triple sequence"]
+
 
 yaku_values = {}
 for yaku in yaku_1han:
@@ -27,8 +35,8 @@ for yaku in double_yakuman_list:
     yaku_values[yaku] = 26
 
 
-def tsumo(sequences: List[List[Tile]], triplets: List[List[Tile]], hand: List[Tile],
-          rest: List[Tile], pair: List[Tile]) -> bool:
+def winning_combination(sequences: List[List[Tile]], triplets: List[List[Tile]], hand: List[Tile],
+                        rest: List[Tile], pair: List[Tile]) -> bool:
     return len(sequences + triplets) == 4 or seven_pairs(hand, []) or thirteen_orphans(hand) or nine_gates(rest, pair)
 
 

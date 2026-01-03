@@ -1,6 +1,6 @@
 import unittest
 
-from game.deck import *
+from game.game_state import *
 
 
 class DeckTests(unittest.TestCase):

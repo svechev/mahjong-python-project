@@ -16,13 +16,28 @@ class YakuTests(unittest.TestCase):
 
         kan_tiles = [Tile(Suit.PIN, 4)]
         # Act
-        yakus = get_yakus(hand, kan_tiles, PREVALENT_WIND, seat_wind, hand[0])
+        closed_yakus = get_yakus(hand, kan_tiles, PREVALENT_WIND, seat_wind, [], hand[0], num_waits=2)
+
+        open_combos = [hand[:3]]
+        hand = hand[3:]
+
+        open_yakus_tsumo = get_yakus(hand, kan_tiles, PREVALENT_WIND, seat_wind, open_combos, hand[4],
+                                     num_waits=2,
+                                     is_ron=False)
+        open_yakus_ron = get_yakus(hand, kan_tiles, PREVALENT_WIND, seat_wind, open_combos, hand[4],
+                                   num_waits=2,
+                                   is_ron=True)
 
         # Assert
-        self.assertTrue("Tsumo" in yakus)
-        self.assertTrue("All triplets" in yakus)
-        self.assertTrue("Triple triplets" in yakus)
-        self.assertTrue(len(yakus) == 3)
+        self.assertTrue("Tsumo" in closed_yakus)
+        self.assertTrue("All triplets" in closed_yakus)
+        self.assertTrue("Triple triplets" in closed_yakus)
+        self.assertTrue("Four concealed triplets" in closed_yakus)
+        self.assertTrue(len(closed_yakus) == 4)
+        self.assertTrue("Three concealed triplets" in open_yakus_tsumo)
+        self.assertTrue(len(open_yakus_tsumo) == 3)
+        self.assertTrue("Three concealed triplets" not in open_yakus_ron)
+        self.assertTrue(len(open_yakus_ron) == 2)
 
     def test_02_all_simples(self):
         # Arrange
@@ -30,14 +45,16 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.PIN, 4) for _ in range(2)]
         hand += [Tile(Suit.SOU, 2) for _ in range(3)]
         hand += [Tile(Suit.SOU, 8) for _ in range(3)]
+        open_combos = [hand[-3:]]
+        hand = hand[:-3]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, open_combos, hand[0])
 
         # Assert
-        self.assertTrue("Tsumo" in yakus)
+        self.assertTrue("Tsumo" not in yakus)
         self.assertTrue("All simples" in yakus)
-        self.assertTrue(len(yakus) == 2)
+        self.assertTrue(len(yakus) == 1)
 
     def test_03_pinfu(self):
         # Arrange
@@ -48,9 +65,9 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.WIND, "North") for _ in range(2)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0], num_waits=2)
-        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[13], num_waits=1)
-        yakus3 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[1], num_waits=1)
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0], num_waits=2)
+        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[13], num_waits=1)
+        yakus3 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[1], num_waits=1)
 
 
         # Assert
@@ -69,7 +86,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "Red") for _ in range(2)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[9])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[9])
         # Assert
         self.assertTrue("Seven pairs" in yakus)
         self.assertTrue("Tsumo" in yakus)
@@ -84,7 +101,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "White") for _ in range(2)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -101,7 +118,7 @@ class YakuTests(unittest.TestCase):
 
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -118,7 +135,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "Red") for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -139,7 +156,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.WIND, "North") for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -160,7 +177,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.WIND, "North") for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -181,7 +198,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.SOU, i) for i in range(1, 4)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -201,7 +218,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "Green") for _ in range(2)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -214,7 +231,7 @@ class YakuTests(unittest.TestCase):
         hand.append(Tile(Suit.DRAGON, "Red"))
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, last_draw=hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], last_draw=hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -227,7 +244,7 @@ class YakuTests(unittest.TestCase):
         hand.append(Tile(Suit.DRAGON, "Red"))
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, last_draw=hand[13])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], last_draw=hand[13])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -244,7 +261,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "Green") for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, last_draw=hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], last_draw=hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -265,7 +282,7 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.DRAGON, "Green") for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, last_draw=hand[0])
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], last_draw=hand[0])
 
         # Assert
         self.assertTrue("Tsumo" in yakus)
@@ -285,7 +302,7 @@ class YakuTests(unittest.TestCase):
         actual_discard = [Tile(Suit.DRAGON, "Red")]
 
         # Act
-        to_discard = discard_for_ready_hand(hand, [], PREVALENT_WIND, seat_wind)
+        to_discard = discard_for_ready_hand(hand, [], PREVALENT_WIND, seat_wind, [])
 
         # Assert
         self.assertTrue(actual_discard == to_discard)
@@ -296,8 +313,8 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.MAN, 9) for _ in range(3)]
 
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[0])
-        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, hand[13], num_waits=9)
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
+        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[13], num_waits=9)
 
         self.assertTrue("Nine gates" in yakus)
         self.assertTrue("True nine gates" in yakus2)

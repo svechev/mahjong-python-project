@@ -1,15 +1,15 @@
-from game.round import play_round
+from game.round import Round
 from game.tiles import Tile
+import pygame
 
-# todo make a new file: menu that has options:
-# - play (after a win you can save your score/hand in a file)
-# todo 2: new file "result" that has a class result - it will store the hand/kan_tiles/dora/hidden_dora/yakus/han
-# - view tutorial
-# - view yakus
-# = view saved hands (from a file) - maybe sorted by date or han?
-
+# todo 1 BREAKS AFTER REJECTING A RON
 
 if __name__ == "__main__":
+    round = Round()
+    round.run()
+
+
+    '''
     yakus, han, hand, kan_tiles = play_round()
     if yakus:
         print(f"Final hand: {hand}", end=' ')
@@ -24,3 +24,4 @@ if __name__ == "__main__":
         print(f"{han} han")
     else:
         print("Not a winning hand, try again!")
+    '''

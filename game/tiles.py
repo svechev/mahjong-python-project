@@ -8,6 +8,10 @@ dragons = ["White", "Green", "Red"]
 suit_order = ['M', 'P', 'S', "Wind", "Dragon"]
 
 
+def get_next_wind(wind: str) -> str:
+    return winds[(winds.index(wind) + 1) % 4]
+
+
 class Suit(Enum):
     MAN = 'M'
     PIN = 'P'
@@ -76,6 +80,9 @@ class Tile:
             return True
         else:
             return False
+
+    def __bool__(self):
+        return True
 
     def is_honour(self) -> bool:
         return self.suit in [Suit.WIND, Suit.DRAGON]

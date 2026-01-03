@@ -57,8 +57,21 @@ def get_combos(rest: List[Tile], sequences_first: bool) -> (List[Tile], List[Til
 
 
 def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-              last_draw: Tile, num_waits: int = 1) -> (List[str]):
+              open_combos: List[List[Tile]], last_draw: Tile,
+              is_first_turn: bool = False,
+              is_last_turn: bool = False,
+              is_ron: bool = False,
+              num_waits: int = 1, num_kans: int = 1) -> (List[str]):
+
     removed = remove_red_fives(hand)
+
+    # split the sequences and triplets - easier checks for concealed triplets
+    open_triplets, open_sequences = [], []
+    for combo in open_combos:
+        if combo[0] == combo[1]:  # triplet
+            open_triplets.append(combo)
+        else:                     # sequence
+            open_sequences.append(combo)
 
     yakus, han = [], 0
     for sequences_first in [True, False]:
@@ -73,19 +86,51 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                 continue
 
             sequences, triplets = get_combos(rest, sequences_first=sequences_first)
+            sequences += open_sequences
+            triplets += open_triplets
             for tile in kan_tiles:
                 triplets.append([tile for _ in range(3)])
 
-
             # check if it's a winning hand
-            if tsumo(sequences, triplets, hand, rest, pair):
-                curr_yakus.append("Tsumo")
+            if winning_combination(sequences, triplets, hand, rest, pair):
+                if not open_combos and not is_ron:
+                    curr_yakus.append("Tsumo")  # means "fully concealed hand (and got the last tile by drawing it)"
 
-                # tsumo means the hand is winning, now we check all the yakus
+                # winning combination means the hand has 4 triplets/sequences and a pair, now we check all the yakus
                 pairs = []
                 if seven_pairs(hand, pairs):
                     curr_yakus.append("Seven pairs")
 
+                # some special yakus, that are dependant on conditions outside the hand itself:
+                if is_first_turn and not open_combos and not is_ron:
+                    if s_wind == prev_wind:
+                        curr_yakus.append("Blessing of heaven")
+                    else:
+                        curr_yakus.append("Blessing of earth")
+                if is_last_turn:
+                    if is_ron:
+                        curr_yakus.append("Under the river")
+                    else:
+                        curr_yakus.append("Under the sea")
+                if num_kans == 3:
+                    curr_yakus.append("Three quads")
+                if num_kans == 4:
+                    curr_yakus.append("Four quads")
+
+                concealed_triplets = [triplet[0] for triplet in triplets if triplet not in open_triplets]
+                concealed_triplets_count = len(concealed_triplets)
+                if last_draw in concealed_triplets and is_ron:
+                    concealed_triplets_count -= 1
+
+                if concealed_triplets_count == 3:
+                    curr_yakus.append("Three concealed triplets")
+                if concealed_triplets_count == 4:
+                    if num_waits == 2:
+                        curr_yakus.append("Four concealed triplets")
+                    else:
+                        curr_yakus.append("Single-wait four concealed triplets")
+
+                # normal yakus:
                 if all_simples(hand, kan_tiles):
                     curr_yakus.append("All simples")
                 if all_triplets(triplets):
@@ -152,7 +197,7 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Three quads")
                 if len(kan_tiles) == 4:
                     curr_yakus.append("Four quads")
-                if pinfu(sequences, pair, prev_wind, s_wind, num_waits):
+                if pinfu(sequences, pair, prev_wind, s_wind, num_waits) and open_sequences == []:
                     curr_yakus.append("Pinfu")
                 if nine_gates(rest, pair):
                     curr_yakus.append("Nine gates")
@@ -174,12 +219,13 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
     return yakus
 
 
-def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str) -> List[Tile]:
+def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
+               open_combos: List[List[Tile]]) -> List[Tile]:
     waits = []
     for tile in all_tiles:
         hand.append(tile)
         hand.sort()
-        if get_yakus(hand, kan_tiles, prev_wind, s_wind, last_draw=tile):
+        if get_yakus(hand, kan_tiles, prev_wind, s_wind, open_combos, last_draw=tile):
             waits.append(tile)
         hand.remove(tile)
     waits = list(set(waits))
@@ -187,11 +233,12 @@ def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: 
     return waits
 
 
-def discard_for_ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str) -> List[Tile]:
+def discard_for_ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
+                           open_combos: List[List[Tile]]) -> List[Tile]:
     to_discard = []
     for tile in hand:
         hand.remove(tile)
-        if ready_hand(hand, kan_tiles, prev_wind, s_wind):
+        if ready_hand(hand, kan_tiles, prev_wind, s_wind, open_combos):
             to_discard.append(tile)
         hand.append(tile)
         hand.sort()
