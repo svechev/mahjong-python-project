@@ -65,6 +65,10 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
 
     removed = remove_red_fives(hand)
 
+    open_tiles = []
+    for combo in open_combos:
+        open_tiles += combo
+
     # split the sequences and triplets - easier checks for concealed triplets
     open_triplets, open_sequences = [], []
     for combo in open_combos:
@@ -93,6 +97,7 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
 
             # check if it's a winning hand
             if winning_combination(sequences, triplets, hand, rest, pair):
+                print(f"this is a winning combination: {hand=}")
                 if not open_combos and not is_ron:
                     curr_yakus.append("Tsumo")  # means "fully concealed hand (and got the last tile by drawing it)"
 
@@ -101,37 +106,8 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                 if seven_pairs(hand, pairs):
                     curr_yakus.append("Seven pairs")
 
-                # some special yakus, that are dependant on conditions outside the hand itself:
-                if is_first_turn and not open_combos and not is_ron:
-                    if s_wind == prev_wind:
-                        curr_yakus.append("Blessing of heaven")
-                    else:
-                        curr_yakus.append("Blessing of earth")
-                if is_last_turn:
-                    if is_ron:
-                        curr_yakus.append("Under the river")
-                    else:
-                        curr_yakus.append("Under the sea")
-                if num_kans == 3:
-                    curr_yakus.append("Three quads")
-                if num_kans == 4:
-                    curr_yakus.append("Four quads")
-
-                concealed_triplets = [triplet[0] for triplet in triplets if triplet not in open_triplets]
-                concealed_triplets_count = len(concealed_triplets)
-                if last_draw in concealed_triplets and is_ron:
-                    concealed_triplets_count -= 1
-
-                if concealed_triplets_count == 3:
-                    curr_yakus.append("Three concealed triplets")
-                if concealed_triplets_count == 4:
-                    if num_waits == 2:
-                        curr_yakus.append("Four concealed triplets")
-                    else:
-                        curr_yakus.append("Single-wait four concealed triplets")
-
                 # normal yakus:
-                if all_simples(hand, kan_tiles):
+                if all_simples(hand, kan_tiles, open_tiles):
                     curr_yakus.append("All simples")
                 if all_triplets(triplets):
                     curr_yakus.append("All triplets")
@@ -210,12 +186,43 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     if "Nine gates" in curr_yakus:
                         curr_yakus.remove("Nine gates")
 
+                # some special yakus, that are dependant on conditions outside the hand itself:
+                if is_first_turn and not open_combos and not is_ron:
+                    if s_wind == prev_wind:
+                        curr_yakus.append("Blessing of heaven")
+                    else:
+                        curr_yakus.append("Blessing of earth")
+                if is_last_turn:
+                    if is_ron:
+                        curr_yakus.append("Under the river")
+                    else:
+                        curr_yakus.append("Under the sea")
+                if num_kans == 3:
+                    curr_yakus.append("Three quads")
+                if num_kans == 4:
+                    curr_yakus.append("Four quads")
+
+                concealed_triplets = [triplet[0] for triplet in triplets if triplet not in open_triplets]
+                concealed_triplets_count = len(concealed_triplets)
+                if last_draw in concealed_triplets and is_ron:
+                    concealed_triplets_count -= 1
+
+                if concealed_triplets_count == 3:
+                    curr_yakus.append("Three concealed triplets")
+                if concealed_triplets_count == 4:
+                    if num_waits == 2:
+                        curr_yakus.append("Four concealed triplets")
+                    else:
+                        curr_yakus.append("Single-wait four concealed triplets")
+
                 curr_han = calculate_han(curr_yakus)
                 if curr_han > han:
                     han = curr_han
                     yakus = curr_yakus
 
     add_red_fives(hand, removed)
+    if yakus:
+        print(f"{hand=}, {open_combos=}, {yakus=}")
     return yakus
 
 
@@ -228,7 +235,6 @@ def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: 
         if get_yakus(hand, kan_tiles, prev_wind, s_wind, open_combos, last_draw=tile):
             waits.append(tile)
         hand.remove(tile)
-    waits = list(set(waits))
     waits.sort()
     return waits
 

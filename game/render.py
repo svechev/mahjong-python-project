@@ -204,14 +204,7 @@ class Renderer:
         pile_width = 9 * TILE_SIZE[0]
         pile_height = 2 * TILE_SIZE[1]
 
-        if state.next_player == get_next_wind(state.seat_wind):  # right player
-            turn = "right"
-        elif state.next_player == get_next_wind(get_next_wind(state.seat_wind)):  # across player
-            turn = "across"
-        elif state.seat_wind == get_next_wind(state.next_player):  # left player
-            turn = "left"
-        else:
-            turn = "me"
+        turn = state.next_player
 
         # across
         i, row = 1, 1
@@ -241,7 +234,7 @@ class Renderer:
         # left
         i, row = 0, 1
         for (j, tile) in enumerate(state.left_discards):
-            if j == len(state.across_discards) - 1 and state.claimable_tile is not None and turn == "left":
+            if j == len(state.left_discards) - 1 and state.claimable_tile is not None and turn == "left":
                 self.draw_tile(tile, (105 - (row - 2) * TILE_SIZE[1], 100 + i * TILE_SIZE[0]), "right",
                                claimable=True)
             else:
@@ -254,10 +247,10 @@ class Renderer:
         # right
         i, row = 0, 1
         for (j, tile) in enumerate(state.right_discards):
-            if j == len(state.across_discards) - 1 and state.claimable_tile is not None and turn == "right":
+            if j == len(state.right_discards) - 1 and state.claimable_tile is not None and turn == "right":
                 self.draw_tile(tile,
                                (765 + (row - 1) * TILE_SIZE[1], 100 + pile_width - (i + 1) * TILE_SIZE[0]),
-                               "left")
+                               "left", claimable=True)
             else:
                 self.draw_tile(tile,
                                (765 + (row - 1) * TILE_SIZE[1], 100 + pile_width - (i + 1) * TILE_SIZE[0]),

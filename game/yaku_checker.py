@@ -37,21 +37,30 @@ for yaku in double_yakuman_list:
 
 def winning_combination(sequences: List[List[Tile]], triplets: List[List[Tile]], hand: List[Tile],
                         rest: List[Tile], pair: List[Tile]) -> bool:
-    return len(sequences + triplets) == 4 or seven_pairs(hand, []) or thirteen_orphans(hand) or nine_gates(rest, pair)
+    total_combos = len(sequences) + len(triplets)
+    if thirteen_orphans(hand): print("orphans?")
+    if nine_gates(rest, pair): print("gates?")
+    if total_combos == 4:
+        print(f"{sequences=}, {triplets=}, {pair=}")
+    if seven_pairs(hand, []):
+        print("it was seven pairs")
+    return total_combos == 4 or seven_pairs(hand, []) or thirteen_orphans(hand) or nine_gates(rest, pair)
 
 
 def seven_pairs(hand: List[Tile], add_pairs: List[Tile]) -> bool:
-    if len(hand) < 14:  # no kan allowed
+    if len(hand) < 14:  # no kan allowed, no open tiles allowed
         return False
-    pairs = [hand[i] == hand[i + 1] for i in range(0, 12, 2)]
+    pairs = [hand[i] == hand[i + 1] for i in range(0, 14, 2)]
     if False not in pairs:
-        for i in range(0, 12, 2):
+        for i in range(0, 14, 2):
             add_pairs.append(hand[i])  # store the pairs in the list for further use
         return True
+    else:
+        return False
 
 
-def all_simples(hand: List[Tile], kan_tiles: List[Tile]) -> bool:
-    simples = [tile for tile in [*hand, *kan_tiles] if not tile.is_honour() and not tile.is_terminal()]
+def all_simples(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    simples = [tile for tile in [*hand, *kan_tiles, *open_tiles] if not tile.is_honour() and not tile.is_terminal()]
     return len(simples) == len([*hand, *kan_tiles])
 
 

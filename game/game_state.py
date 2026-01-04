@@ -10,7 +10,7 @@ turns = ["left", "me", "right", "across"]
 
 
 def get_next_player(curr: str) -> str:
-    return turns[(winds.index(turns) + 1) % 4]
+    return turns[(turns.index(curr) + 1) % 4]
 
 
 class GameState:
@@ -34,8 +34,8 @@ class GameState:
         self.left_discards, self.across_discards, self.right_discards = [], [], []
 
         self.hand = self.get_starting_hand()  # only for rendering
-        self.next_draw = None
-        self.closed_tiles = list(self.hand)  # used for logic, will include tiles that are just drawn/discarded
+        self.next_draw: Tile | None = None
+        self.closed_tiles = self.hand.copy()  # used for logic, will include tiles that are just drawn/discarded
         self.open_combos = []
         self.kan_tiles = []
         self.open_kan_tiles = []
@@ -69,7 +69,18 @@ class GameState:
         self.waits_action = False
         self.claimable_tile: Tile | None = None
 
-        self.next_player = self.prevalent_wind
+        w1 = self.prevalent_wind
+        w2 = get_next_wind(w1)
+        w3 = get_next_wind(w2)
+        w4 = get_next_wind(w3)
+        if self.seat_wind == w1:
+            self.next_player = "me"
+        elif self.seat_wind == w2:
+            self.next_player = "left"
+        elif self.seat_wind == w3:
+            self.next_player = "across"
+        elif self.seat_wind == w4:
+            self.next_player = "right"
 
         # DEBUG PURPOSES
         self.hand = [Tile(Suit.MAN, 2) for _ in range(3)]
@@ -77,7 +88,7 @@ class GameState:
         self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
         self.hand += [Tile(Suit.MAN, i) for i in range(5, 8)]
         self.hand += [Tile(Suit.MAN, 7) for _ in range(2)]
-        self.closed_tiles = list(self.hand)
+        self.closed_tiles = self.hand.copy()
         self.wall[0] = Tile(Suit.MAN, 3)
         self.wall[1] = Tile(Suit.MAN, 7)
         self.wall[3] = Tile(Suit.MAN, 3)
@@ -103,7 +114,10 @@ class GameState:
         self.winning_yakus = []
 
     def activate_buttons(self, new_tile: Tile) -> None:
-        if self.seat_wind == self.next_player:
+        print("before activating buttons: ")
+        print(f"{self.waits=}")
+        print(f"{self.winning_yakus=}")
+        if self.next_player == "me":
             self.check_tsumo(new_tile)
             self.check_riichi(new_tile)
             if self.draws_left > 0:
@@ -113,7 +127,7 @@ class GameState:
             if self.draws_left > 0:
                 self.check_pon(new_tile)
                 self.check_kan(new_tile, stolen=True)
-        if get_next_wind(self.next_player) == self.seat_wind and self.draws_left > 0:  # if it's left player's turn
+        if self.next_player == "left" and self.draws_left > 0:  # if it's left player's turn
             self.check_chii(new_tile)
 
     # debug function
@@ -127,7 +141,7 @@ class GameState:
     def has_buttons(self) -> bool:
         if self.can_tsumo or self.can_ron or self.can_kan or self.can_pon or self.can_chii:
             return True
-        if self.seat_wind == self.next_player and self.can_riichi:
+        if self.next_player == "me" and self.can_riichi:
             return True
 
     def draw(self) -> Tile | None:
@@ -158,7 +172,8 @@ class GameState:
             if tile == to_discard:
                 self.hand.remove(tile)
                 self.discard_pile.append(tile)
-                self.hand.append(self.next_draw)
+                if self.next_draw is not None:
+                    self.hand.append(self.next_draw)
                 self.hand.sort()
                 self.closed_tiles = list(self.hand)
                 waits = ready_hand(self.closed_tiles, self.kan_tiles, self.prevalent_wind, self.seat_wind,
@@ -189,6 +204,7 @@ class GameState:
     def check_ron(self, potential_tile: Tile) -> None:
         tile_to_check = Tile(potential_tile.suit, potential_tile.value)
         self.closed_tiles.append(tile_to_check)
+        self.closed_tiles.sort()
         removed = remove_red_fives(self.closed_tiles)
 
         yakus = get_yakus(hand=self.closed_tiles,
@@ -204,7 +220,7 @@ class GameState:
                           num_kans=len(self.kan_tiles))
         self.winning_yakus = yakus
         if self.winning_yakus:
-            print(f"{self.closed_tiles=}, {potential_tile=}")
+            print(f"{self.closed_tiles=}")
             self.can_ron = potential_tile
 
         add_red_fives(self.closed_tiles, removed)
@@ -227,7 +243,6 @@ class GameState:
                           num_kans=len(self.kan_tiles))
         self.winning_yakus = yakus
         if self.winning_yakus:
-            print(f"{self.closed_tiles=}, {drawn_tile=}")
             self.can_tsumo = drawn_tile
 
         add_red_fives(self.closed_tiles, removed)
@@ -280,6 +295,26 @@ class GameState:
             if Tile(tile.suit, tile.value) == Tile(self.claimable_tile.suit, self.claimable_tile.value):
                 open_triplet.append(tile)
         self.open_combos.append(open_triplet)
+
+        removed = 0
+        print(f"{self.hand=}")
+        for tile in self.hand:
+            print(f"{tile=}")
+            if Tile(tile.suit, tile.value) == Tile(self.claimable_tile.suit, self.claimable_tile.value):
+                print("remove from hand")
+                self.hand.remove(tile)
+                removed += 1
+                if removed == 2:
+                    break
+
+        self.closed_tiles = self.hand.copy()
+
+        if self.next_player == "left":
+            self.left_discards.pop()
+        elif self.next_player == "across":
+            self.across_discards.pop()
+        elif self.next_player == "right":
+            self.right_discards.pop()
 
     def clicked_kan(self) -> None:
         pass

@@ -130,6 +130,9 @@ def split_hand(hand: List[Tile]) -> (List[Tile], List[Tile], List[Tile], List[Ti
     honour_tiles = [tile for tile in hand if tile not in [*m_tiles, *p_tiles, *s_tiles]]
     return m_tiles, p_tiles, s_tiles, honour_tiles
 
+def remove_tile_from_hand(hand: List[Tile], tile: Tile, n: int) -> None:
+    pass
+
 
 def tile_from_str(st: str) -> Tile | None:
     if len(st) < 2:

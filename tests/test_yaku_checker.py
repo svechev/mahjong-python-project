@@ -1,7 +1,7 @@
 import unittest
 
 from game.tiles import Suit, Tile, all_tiles
-from game.winning_hand_checker import get_yakus, discard_for_ready_hand
+from game.winning_hand_checker import get_yakus, discard_for_ready_hand, ready_hand
 
 PREVALENT_WIND = "East"
 seat_wind = "South"
@@ -307,15 +307,24 @@ class YakuTests(unittest.TestCase):
         # Assert
         self.assertTrue(actual_discard == to_discard)
 
-    def test_17_nine_gates(self):
+    def test_17_ready_hand(self):
         # Arrange
-        hand = [Tile(Suit.MAN, 1) for _ in range(2)] + [Tile(Suit.MAN, i) for i in range(1, 10)]
-        hand += [Tile(Suit.MAN, 9) for _ in range(3)]
+        # Arrange
+        hand = [Tile(Suit.MAN, 9) for _ in range(2)]
+        hand += [Tile(Suit.PIN, 5)] + [Tile(Suit.PIN, 5, is_red_five=True)]
+        hand += [Tile(Suit.SOU, 2) for _ in range(2)]
+        hand += [Tile(Suit.SOU, 4) for _ in range(2)]
+        hand += [Tile(Suit.SOU, 5)] + [Tile(Suit.SOU, 5, is_red_five=True)]
+        hand += [Tile(Suit.WIND, "West") for _ in range(2)]
+        hand += [Tile(Suit.DRAGON, "Red")]
 
+        actual_waits = [Tile(Suit.DRAGON, "Red")]
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])
-        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[13], num_waits=9)
+        waits = ready_hand(hand, [], PREVALENT_WIND, seat_wind, [])
+        print(waits)
 
-        self.assertTrue("Nine gates" in yakus)
-        self.assertTrue("True nine gates" in yakus2)
+        # Assert
+        self.assertTrue(waits == actual_waits)
+
+
 

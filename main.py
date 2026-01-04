@@ -2,7 +2,9 @@ from game.round import Round
 from game.tiles import Tile
 import pygame
 
-# todo 1 BREAKS AFTER REJECTING A RON
+# todo 1 winning_combination fails
+# todo 2 !!!!!DO THIS yaku checking usually does not include open tiles, fix that - mainly yaku functions that
+# todo 2 accept just "hand", make them accept "open combos" too (example: tanyao should check open_combos too)
 
 if __name__ == "__main__":
     round = Round()

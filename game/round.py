@@ -1,6 +1,6 @@
 from game.tiles import print_hand, winds, Tile, get_next_wind
 from random import choice
-from game.game_state import GameState
+from game.game_state import GameState, get_next_player
 from game.winning_hand_checker import get_yakus, calculate_han, ready_hand, discard_for_ready_hand
 from typing import List
 from time import sleep
@@ -56,27 +56,25 @@ class Round:
                             if rect.collidepoint(mouse_pos):
                                 match action:
                                     case "Pon":
-                                        self.state.clicked_pon(self.state.next_player)
-                                        self.state.next_player = self.state.seat_wind
+                                        self.state.clicked_pon()
+                                        self.state.next_player = "me"
                                         self.state.must_discard = True
 
                                     case "Skip":
-                                        if self.state.next_player != self.state.seat_wind:
+                                        if self.state.next_player != "me":
                                             self.state.waits_action = False
-                                        print(f"curr player: {self.state.next_player}")
-                                        self.state.reset_buttons()
+
                                         # it was an opponent's discard
-                                        if self.state.next_player != self.state.seat_wind:
-                                            self.state.next_player = get_next_wind(self.state.next_player)
+                                        if self.state.next_player != "me":
+                                            self.state.next_player = get_next_player(self.state.next_player)
                                         else:  # skipped action on our turn
                                             self.state.must_discard = True
-                                        print(f"next player: {self.state.next_player}")
 
+                                self.state.reset_buttons()
                                 self.state.claimable_tile = None
 
-
                     else:  # must discard a tile
-                        if self.state.next_player == self.state.seat_wind:
+                        if self.state.next_player == "me":
                             for tile, rect in self.renderer.tile_rects:
                                 if rect.collidepoint(mouse_pos) and 650 > mouse_pos[1] > 579:
                                     if self.state.must_discard:
@@ -85,7 +83,7 @@ class Round:
                                         self.state.must_discard = False
                                         self.state.claimable_tile = None
                                         self.state.waits_action = False
-                                        self.state.next_player = get_next_wind(self.state.next_player)
+                                        self.state.next_player = get_next_player(self.state.next_player)
                                         if self.state.first_turn:
                                             self.state.first_turn = False
                                         if self.state.ippatsu:
@@ -100,7 +98,7 @@ class Round:
             return
 
         # my turn
-        if self.state.next_player == self.state.seat_wind:
+        if self.state.next_player == "me":
             print("we draw now")
             self.state.next_draw = self.state.draw()
             self.state.activate_buttons(self.state.next_draw)
@@ -109,7 +107,7 @@ class Round:
                 self.state.must_discard = True
 
         # right player
-        elif self.state.next_player == get_next_wind(self.state.seat_wind):
+        elif self.state.next_player == "right":
             right_draw = self.state.draw()
             if not right_draw:
                 return
@@ -119,10 +117,10 @@ class Round:
                 self.state.claimable_tile = right_draw
                 self.state.waits_action = True
             else:
-                self.state.next_player = get_next_wind(self.state.next_player)
+                self.state.next_player = get_next_player(self.state.next_player)
 
         # player across
-        elif self.state.next_player == get_next_wind(get_next_wind(self.state.seat_wind)):
+        elif self.state.next_player == "across":
             across_draw = self.state.draw()
             if not across_draw:
                 return
@@ -132,7 +130,7 @@ class Round:
                 self.state.claimable_tile = across_draw
                 self.state.waits_action = True
             else:
-                self.state.next_player = get_next_wind(self.state.next_player)
+                self.state.next_player = get_next_player(self.state.next_player)
 
         # left player
         else:
@@ -145,7 +143,7 @@ class Round:
                 self.state.claimable_tile = left_draw
                 self.state.waits_action = True
             else:
-                self.state.next_player = get_next_wind(self.state.next_player)
+                self.state.next_player = get_next_player(self.state.next_player)
 
         self.state.print_buttons()  # debug function
 
