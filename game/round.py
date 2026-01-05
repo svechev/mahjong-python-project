@@ -55,10 +55,21 @@ class Round:
                         for action, rect in self.renderer.button_rects.items():
                             if rect.collidepoint(mouse_pos):
                                 match action:
+                                    case "Chii (L)":
+                                        self.state.clicked_chii("left")
+                                    case "Chii (M)":
+                                        self.state.clicked_chii("middle")
+                                    case "Chii (R)":
+                                        self.state.clicked_chii("right")
                                     case "Pon":
                                         self.state.clicked_pon()
-                                        self.state.next_player = "me"
-                                        self.state.must_discard = True
+
+                                    case "Kan":
+                                        if self.state.next_player == "me":
+                                            self.state.clicked_kan(stolen=False)
+                                            self.state.next_draw = None
+                                        else:
+                                            self.state.clicked_kan(stolen=True)
 
                                     case "Skip":
                                         if self.state.next_player != "me":
@@ -70,8 +81,16 @@ class Round:
                                         else:  # skipped action on our turn
                                             self.state.must_discard = True
 
+                                if action != "Skip":  # inspect riichi when you add it
+                                    self.state.next_player = "me"
+                                    if action == "Kan":
+                                        self.state.waits_action = False
+                                    else:
+                                        self.state.must_discard = True
+
                                 self.state.reset_buttons()
                                 self.state.claimable_tile = None
+
 
                     else:  # must discard a tile
                         if self.state.next_player == "me":
@@ -79,15 +98,6 @@ class Round:
                                 if rect.collidepoint(mouse_pos) and 650 > mouse_pos[1] > 579:
                                     if self.state.must_discard:
                                         self.state.discard_tile(tile)
-                                        self.state.next_draw = None
-                                        self.state.must_discard = False
-                                        self.state.claimable_tile = None
-                                        self.state.waits_action = False
-                                        self.state.next_player = get_next_player(self.state.next_player)
-                                        if self.state.first_turn:
-                                            self.state.first_turn = False
-                                        if self.state.ippatsu:
-                                            self.state.ippatsu = False
                                         break
 
     def update(self):  # next turn

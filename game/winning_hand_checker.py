@@ -58,6 +58,7 @@ def get_combos(rest: List[Tile], sequences_first: bool) -> (List[Tile], List[Til
 
 def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
               open_combos: List[List[Tile]], last_draw: Tile,
+              is_after_kan: bool = False,
               is_first_turn: bool = False,
               is_last_turn: bool = False,
               is_ron: bool = False,
@@ -97,9 +98,11 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
 
             # check if it's a winning hand
             if winning_combination(sequences, triplets, hand, rest, pair):
-                print(f"this is a winning combination: {hand=}")
                 if not open_combos and not is_ron:
                     curr_yakus.append("Tsumo")  # means "fully concealed hand (and got the last tile by drawing it)"
+
+                # print(f"this is a winning combination: {hand=}, {open_combos=}")
+                # print(f"{triplets=}, {sequences=}, {pair=}")
 
                 # winning combination means the hand has 4 triplets/sequences and a pair, now we check all the yakus
                 pairs = []
@@ -111,9 +114,9 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("All simples")
                 if all_triplets(triplets):
                     curr_yakus.append("All triplets")
-                if half_flush(hand, kan_tiles):
+                if half_flush(hand, kan_tiles, open_tiles):
                     curr_yakus.append("Half flush")
-                if full_flush(hand, kan_tiles):
+                if full_flush(hand, kan_tiles, open_tiles):
                     curr_yakus.append("Full flush")
                 if white_dragon(triplets):
                     curr_yakus.append("White dragon")
@@ -131,11 +134,11 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Prevalent wind")
                 if four_big_winds(triplets):
                     curr_yakus.append("Four big winds")
-                if all_terminals_and_honors(hand, kan_tiles):
+                if all_terminals_and_honors(hand, kan_tiles, open_tiles):
                     curr_yakus.append("All terminals and honors")
-                if all_terminals(hand):
+                if all_terminals(hand, kan_tiles, open_tiles):
                     curr_yakus.append("All terminals")
-                if all_honors(hand):
+                if all_honors(hand, kan_tiles, open_tiles):
                     curr_yakus.append("All honors")
                 if half_outside_hand(sequences, triplets, pair, pairs):
                     curr_yakus.append("Half outside hand")
@@ -167,7 +170,7 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Triple triplets")
                 if pure_straight(sequences):
                     curr_yakus.append("Pure straight")
-                if all_green(hand, kan_tiles):
+                if all_green(hand, kan_tiles, open_tiles):
                     curr_yakus.append("All green")
                 if len(kan_tiles) == 3:
                     curr_yakus.append("Three quads")
@@ -187,6 +190,9 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                         curr_yakus.remove("Nine gates")
 
                 # some special yakus, that are dependant on conditions outside the hand itself:
+                if is_after_kan and not is_ron:
+                    curr_yakus.append("After a kan")
+
                 if is_first_turn and not open_combos and not is_ron:
                     if s_wind == prev_wind:
                         curr_yakus.append("Blessing of heaven")
@@ -221,8 +227,8 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     yakus = curr_yakus
 
     add_red_fives(hand, removed)
-    if yakus:
-        print(f"{hand=}, {open_combos=}, {yakus=}")
+    # if yakus:
+        # print(f"{hand=}, {open_combos=}, {yakus=}")
     return yakus
 
 

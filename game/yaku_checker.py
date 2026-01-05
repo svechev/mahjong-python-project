@@ -38,12 +38,6 @@ for yaku in double_yakuman_list:
 def winning_combination(sequences: List[List[Tile]], triplets: List[List[Tile]], hand: List[Tile],
                         rest: List[Tile], pair: List[Tile]) -> bool:
     total_combos = len(sequences) + len(triplets)
-    if thirteen_orphans(hand): print("orphans?")
-    if nine_gates(rest, pair): print("gates?")
-    if total_combos == 4:
-        print(f"{sequences=}, {triplets=}, {pair=}")
-    if seven_pairs(hand, []):
-        print("it was seven pairs")
     return total_combos == 4 or seven_pairs(hand, []) or thirteen_orphans(hand) or nine_gates(rest, pair)
 
 
@@ -61,23 +55,23 @@ def seven_pairs(hand: List[Tile], add_pairs: List[Tile]) -> bool:
 
 def all_simples(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
     simples = [tile for tile in [*hand, *kan_tiles, *open_tiles] if not tile.is_honour() and not tile.is_terminal()]
-    return len(simples) == len([*hand, *kan_tiles])
+    return len(simples) == len([*hand, *kan_tiles, *open_tiles])
 
 
 def all_triplets(triplets: List[List[Tile]]) -> bool:
     return len(triplets) == 4
 
 
-def half_flush(hand: List[Tile], kan_tiles: List[Tile]) -> bool:
-    sorted_hand = [*list(hand), *kan_tiles]
+def half_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    sorted_hand = [*list(hand), *kan_tiles, *open_tiles]
     sorted_hand.sort()
     man, pin, sou, honours = split_hand(sorted_hand)
     empty_suits = len([suit for suit in [man, pin, sou] if not suit])
     return empty_suits == 2 and honours
 
 
-def full_flush(hand: List[Tile], kan_tiles: List[Tile]) -> bool:
-    sorted_hand = [*list(hand), *kan_tiles]
+def full_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    sorted_hand = [*list(hand), *kan_tiles, *open_tiles]
     sorted_hand.sort()
     man, pin, sou, honours = split_hand(sorted_hand)
     empty_suits = len([suit for suit in [man, pin, sou] if not suit])
@@ -127,22 +121,24 @@ def four_big_winds(triplets: List[List[Tile]]):
     return len(wind_triplets) == 4
 
 
-def all_terminals_and_honors(hand: List[Tile], kan_tiles) -> bool:
-    sorted_tiles = [*list(hand), *kan_tiles]
+def all_terminals_and_honors(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    sorted_tiles = [*list(hand), *kan_tiles, *open_tiles]
     sorted_tiles.sort()
     filtered = [tile for tile in sorted_tiles if tile.is_honour() or tile.is_terminal()]
     honours = [tile for tile in sorted_tiles if tile.is_honour()]
     return len(filtered) == len(sorted_tiles) and 1 <= len(honours) <= len(sorted_tiles)-1
 
 
-def all_terminals(hand: List[Tile]) -> bool:
-    terminals = [tile for tile in hand if tile.is_terminal()]
-    return len(terminals) == 14
+def all_terminals(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    all_tiles = [*hand, *kan_tiles, *open_tiles]
+    terminals = [tile for tile in all_tiles if tile.is_terminal()]
+    return len(terminals) == len(all_tiles)
 
 
-def all_honors(hand: List[Tile]) -> bool:
+def all_honors(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+    all_tiles = [*hand, *kan_tiles, *open_tiles]
     honours = [tile for tile in hand if tile.is_honour()]
-    return len(honours) == 14
+    return len(honours) == len(all_tiles)
 
 
 def half_outside_hand(sequences: List[List[Tile]], triplets: List[List[Tile]], pair: List[Tile],
@@ -194,10 +190,13 @@ def four_little_winds(triplets: List[List[Tile]], pair: List[Tile]) -> bool:
 
 def pure_double_sequence(sequences: List[List[Tile]]) -> bool:
     # do 2 different sequences have the same elements?
+    if len(sequences) <= 1:
+        return False
+
     for i in range(len(sequences) - 1):
         same = True
-        for j, elem in enumerate(sequences[i]):
-            if elem != sequences[i + 1][j]:
+        for j in range(i+1, len(sequences)):
+            if sequences[i][0] != sequences[j][0]:
                 same = False
         if same:
             return True
@@ -283,14 +282,15 @@ def pure_straight(sequences: List[List[Tile]]) -> bool:
            Tile(common_suit, 7) in first_tiles
 
 
-def all_green(hand: List[Tile], kan_tiles: List[Tile]) -> bool:
+def all_green(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
     green_tiles = [Tile(Suit.SOU, i) for i in range(2, 5)]
     green_tiles.append(Tile(Suit.SOU, 6))
     green_tiles.append(Tile(Suit.SOU, 8))
     green_tiles.append(Tile(Suit.DRAGON, "Green"))
 
-    green_in_hand = [tile for tile in [*hand, *kan_tiles] if tile in green_tiles]
-    return len(green_in_hand) == len([*hand, *kan_tiles])
+    all_tiles = [*hand, *kan_tiles, *open_tiles]
+    green_in_hand = [tile for tile in all_tiles if tile in green_tiles]
+    return len(green_in_hand) == len(all_tiles)
 
 
 def pinfu(sequences: List[List[Tile]], pair: List[Tile], prev_wind: str, s_wind: str, num_waits: int) -> bool:

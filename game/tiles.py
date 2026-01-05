@@ -130,8 +130,20 @@ def split_hand(hand: List[Tile]) -> (List[Tile], List[Tile], List[Tile], List[Ti
     honour_tiles = [tile for tile in hand if tile not in [*m_tiles, *p_tiles, *s_tiles]]
     return m_tiles, p_tiles, s_tiles, honour_tiles
 
-def remove_tile_from_hand(hand: List[Tile], tile: Tile, n: int) -> None:
-    pass
+
+def remove_tile_from_hand(hand: List[Tile], tile: Tile, n: int = 1) -> None:
+    tile_to_remove = Tile(tile.suit, tile.value)
+    removed = remove_red_fives(hand)
+
+    for _ in range(n):
+        hand.remove(tile_to_remove)
+
+    add_red_fives(hand, removed)
+
+
+def add_tile_to_hand(hand: List[Tile], tile: Tile) -> None:
+    hand.append(tile)
+    hand.sort()
 
 
 def tile_from_str(st: str) -> Tile | None:

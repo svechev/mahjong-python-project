@@ -2,28 +2,10 @@ from game.round import Round
 from game.tiles import Tile
 import pygame
 
-# todo 1 winning_combination fails
-# todo 2 !!!!!DO THIS yaku checking usually does not include open tiles, fix that - mainly yaku functions that
-# todo 2 accept just "hand", make them accept "open combos" too (example: tanyao should check open_combos too)
+# todo 1 Riichi, ron, tsumo
+# todo 2 try to make a screen after a win: self.has_won = True maybe and draws that screen on top of the normal one
 
 if __name__ == "__main__":
     round = Round()
     round.run()
 
-
-    '''
-    yakus, han, hand, kan_tiles = play_round()
-    if yakus:
-        print(f"Final hand: {hand}", end=' ')
-        if kan_tiles:
-            print("Kan tiles: ", end=' ')
-            for tile in kan_tiles:
-                if tile.value == 5:
-                    print([tile for _ in range(3)] + [Tile(tile.suit, 5, is_red_five=True)], end=' ')
-                else:
-                    print([tile for _ in range(3)], end=' ')
-        print(f"\nYakus: {yakus}")
-        print(f"{han} han")
-    else:
-        print("Not a winning hand, try again!")
-    '''

@@ -1,6 +1,7 @@
 from game.tiles import Tile, Suit, all_tiles, winds, get_next_wind
 from game.game_state import GameState
 import pygame
+from typing import List
 
 TILE_SIZE = (48, 64)
 SCREEN_WIDTH = 1280
@@ -260,6 +261,24 @@ class Renderer:
                 i = 0
                 row += 1
 
+    def draw_kan_tiles(self, kan_tiles: List[Tile]) -> None:
+        x, y = 50, 580 + TILE_SIZE[1] + 10
+
+        for tile in kan_tiles:
+            i = 0
+            for _ in range(2):
+                self.draw_tile(tile, (x + i * TILE_SIZE[0], y), "up")
+                i += 1
+            if tile.value == 5:
+                red_five = Tile(tile.suit, tile.value, is_red_five=True)
+                self.draw_tile(red_five, (x + i * TILE_SIZE[0], y), "up")
+            else:
+                self.draw_tile(tile, (x + i * TILE_SIZE[0], y), "up")
+            i += 1
+
+            self.draw_tile("back", (x + i * TILE_SIZE[0], y), "up")
+            x += 15 + TILE_SIZE[0] * 4
+
     def draw_hand(self, state: GameState) -> None:  # draw my hand - closed and then open tiles
         i = 0
         # closed hand
@@ -270,13 +289,17 @@ class Renderer:
         if state.next_draw:
             self.draw_tile(state.next_draw, (x + i * TILE_SIZE[0] + 10, y), "up")
 
+        # open tiles
         i = 0
         x, y = 450, 580 + TILE_SIZE[1] + 10
         for combo in state.open_combos:
             for tile in combo:
                 self.draw_tile(tile, (x + i * TILE_SIZE[0], y), "up")
                 i += 1
-            x += 5
+            x += 15 + TILE_SIZE[0]
+
+        # kan tiles
+        self.draw_kan_tiles(state.kan_tiles)
 
     def draw_buttons(self, state: GameState) -> None:  # draw buttons chii, pon...
         width, height = 100, 35
@@ -297,9 +320,14 @@ class Renderer:
             draw_button("Pon", (0, 0, 200), y + height + 25)
         if state.can_kan:
             draw_button("Kan", (150, 0, 150), y + height * 2 + 35)
-        if state.can_chii:  # may need to inquire about "left, middle, right"
-            draw_button("Chii", (0, 200, 0), y + height * 3 + 45)
+        if state.can_chii:
+            if "left" in state.can_chii:
+                draw_button("Chii (L)", (0, 200, 0), y + height * 3 + 45)
+            if "middle" in state.can_chii:
+                draw_button("Chii (M)", (0, 200, 0), y + height * 4 + 55)
+            if "right" in state.can_chii:
+                draw_button("Chii (R)", (0, 200, 0), y + height * 5 + 65)
         if state.can_riichi:
             draw_button("Riichi", (245, 174, 10), y + height + 25)
         if self.button_rects:
-            draw_button("Skip", (50, 50, 50), y + height * 5 + 25)
+            draw_button("Skip", (50, 50, 50), y + height * 6 + 75)
