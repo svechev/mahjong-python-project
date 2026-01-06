@@ -13,7 +13,7 @@ seat_wind = choice(winds)
 # todo try to kan a 5
 
 
-class Round:
+class Game:
     def __init__(self):
         pygame.init()
 
@@ -121,7 +121,6 @@ class Round:
 
     def update(self):  # next turn
         if self.state.round_ended:
-            sleep(1)
             return
 
         if self.state.must_discard:
@@ -146,6 +145,7 @@ class Round:
 
         # my turn
         if self.state.riichi and self.state.next_draw:  # already drawn a tile during riichi
+            sleep(0.5)
             self.state.discard_tile(self.state.next_draw)
 
         elif self.state.next_player == "me":

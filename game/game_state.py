@@ -2,7 +2,7 @@ from game.tiles import *
 from random import shuffle
 from typing import List
 from random import choice
-from game.winning_hand_checker import get_yakus, ready_hand, discard_for_ready_hand, yaku_values
+from game.winning_hand_checker import *
 from time import sleep
 
 turns = ["left", "me", "right", "across"]
@@ -44,7 +44,6 @@ class GameState:
 
         self.prevalent_wind = "East"
         self.seat_wind = choice(winds)
-        self.seat_wind = "South"
 
         # setting up needed states
         self.first_turn = True
@@ -87,11 +86,10 @@ class GameState:
             self.next_player = "right"
 
         # DEBUG PURPOSES - great hand
-        '''
         self.hand = [Tile(Suit.WIND, "East") for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 3) for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
-        self.hand += [Tile(Suit.SOU, i) for i in range(5, 7)]
+        self.hand += [Tile(Suit.MAN, i) for i in range(5, 7)]
         self.hand += [Tile(Suit.MAN, 7) for _ in range(3)]
         self.hand += [Tile(Suit.MAN, 9)]
         self.hand[3] = Tile(Suit.MAN, 5, is_red_five=True)
@@ -100,7 +98,6 @@ class GameState:
         self.wall[0] = Tile(Suit.MAN, 9)
         self.wall[1+4] = Tile(Suit.WIND, "East")
         self.wall[5+3] = Tile(Suit.SOU, 7)
-        '''
 
         # DEBUG PURPOSES - kan testing
         '''
@@ -170,7 +167,10 @@ class GameState:
 
         # get yakus first
         for yaku in self.winning_yakus:
-            self.final_scores.append((yaku_values[yaku], yaku))
+            han = yaku_values[yaku]
+            if self.open_combos and yaku in yakus_cheaper_open_list:
+                han -= 1
+            self.final_scores.append((han, yaku))
 
         # then dora and red fives
         red_five_count, player_dora_count = 0, 0
@@ -230,9 +230,8 @@ class GameState:
         return False
 
     def draw(self) -> Tile | None:
-        print(f"{self.wall=}")
+        sleep(0.5)
         if self.draws_left == 0:  # can't play anymore
-            print("no tiles left")
             self.round_ended = True
             return
 

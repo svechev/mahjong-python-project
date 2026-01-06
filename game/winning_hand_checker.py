@@ -146,11 +146,11 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Fully outside hand")
                 if four_little_winds(triplets, pair):
                     curr_yakus.append("Four little winds")
-                if pure_double_sequence(sequences):
+                if not open_combos and pure_double_sequence(sequences):
                     curr_yakus.append("Pure double sequence")
                 if mixed_triple_sequence(sequences):
                     curr_yakus.append("Mixed triple sequence")
-                if twice_pure_double_sequence(sequences, pairs):
+                if not open_combos and twice_pure_double_sequence(sequences, pairs):
                     curr_yakus.append("Twice pure double sequence")
                     if "Seven pairs" in curr_yakus:
                         curr_yakus.remove("Seven pairs")
@@ -176,7 +176,7 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Three quads")
                 if len(kan_tiles) == 4:
                     curr_yakus.append("Four quads")
-                if pinfu(sequences, pair, prev_wind, s_wind, last_draw) and open_sequences == []:
+                if pinfu(sequences, pair, prev_wind, s_wind, last_draw) and not open_sequences:
                     curr_yakus.append("Pinfu")
                 if nine_gates(rest, pair):
                     curr_yakus.append("Nine gates")

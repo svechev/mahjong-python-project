@@ -125,8 +125,9 @@ class Renderer:
         self.screen.blit(highlight, rect)
 
     def draw_restart_button(self) -> None:
+        pygame.draw.rect(self.screen, (255, 255, 255), self.restart_button_rect)
+
         rest_x, rest_y = SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35
-        pygame.draw.rect(self.screen, (255, 255, 255), self.restart_button_rect, border_radius=8)
         self.draw_text("Restart", (rest_x + 7, rest_y + 7), color=(0, 0, 0))
 
     def draw_dora_indicators(self, start_loc: tuple[int, int], tiles: list[Tile], amount: int) -> None:
@@ -368,8 +369,6 @@ class Renderer:
             draw_button("Skip", (50, 50, 50), y + height * 6 + 75)
 
     def display_waits(self, state: GameState) -> None:
-        # todo if there are no waits, return; if
-        # todo there are waits: print the waits (maybe 5 max and then "..." depends on the space)
         if not state.waits:
             return
 
@@ -416,3 +415,18 @@ class Renderer:
 
             total_score = sum([score[0] for score in state.final_scores])
             self.draw_text(f"Final score: {total_score} han", (x, y + 35))
+            special_text = ""
+            if total_score >= 26:
+                special_text = "DOUBLE YAKUMAN"
+            elif total_score >= 13:
+                special_text = "YAKUMAN"
+            elif total_score >= 11:
+                special_text = "SANBAIMAN"
+            elif total_score >= 8:
+                special_text = "BAIMAN"
+            elif total_score >= 6:
+                special_text = "HANEMAN"
+            elif total_score >= 4:
+                special_text = "MANGAN"
+
+            self.draw_text(special_text, (x + 250, y + 36), (255, 55, 0))

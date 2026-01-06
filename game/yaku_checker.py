@@ -297,7 +297,8 @@ def pinfu(sequences: List[List[Tile]], pair: List[Tile], prev_wind: str, s_wind:
     if len(sequences) == 4:
         double_sided = False
         for sequence in sequences:
-            if last_draw == sequence[0] or last_draw == sequence[2]:
+            val = last_draw.value
+            if (last_draw == sequence[0] and val != 3) or (last_draw == sequence[2] and val != 3):
                 double_sided = True
                 break
 
