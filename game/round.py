@@ -28,6 +28,8 @@ class Round:
         while self.state.running:
             self.handle_events()
             self.update()
+            if self.state.round_ended:
+                sleep(1)
             self.render()
 
             self.clock.tick(60)
@@ -38,10 +40,19 @@ class Round:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.state.running = False
+                return
 
             mouse_pos = pygame.mouse.get_pos()
-            self.renderer.hovered_tile = None
 
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.renderer.restart_button_rect.collidepoint(mouse_pos):
+                    self.state = GameState()
+                    return
+
+            if self.state.round_ended:
+                continue
+
+            self.renderer.hovered_tile = None
             for tile, rect in self.renderer.tile_rects:
                 if rect.collidepoint(mouse_pos):
                     self.renderer.hovered_tile = Tile(tile.suit, tile.value)
@@ -81,22 +92,7 @@ class Round:
                                     case "Tsumo":
                                         self.state.clicked_tsumo()
                                     case "Skip":
-                                        if self.state.next_player != "me":
-                                            self.state.waits_action = False
-
-                                        # it was an opponent's discard
-                                        if self.state.next_player != "me":
-                                            self.state.next_player = get_next_player(self.state.next_player)
-                                        else:  # skipped action on our turn
-                                            if not self.state.riichi:
-                                                self.state.must_discard = True
-                                            else:
-                                                self.state.waits_action = False
-
-                                        if self.state.can_ron or self.state.can_tsumo:
-                                            self.state.furiten = True
-                                            if self.state.riichi:
-                                                self.state.furiten_perm = True
+                                        self.state.clicked_skip()
 
                                 if action != "Skip":  # inspect riichi when you add it
                                     self.state.next_player = "me"
@@ -124,7 +120,8 @@ class Round:
                                             break
 
     def update(self):  # next turn
-        if self.state.have_won:
+        if self.state.round_ended:
+            sleep(1)
             return
 
         if self.state.must_discard:
@@ -132,9 +129,6 @@ class Round:
 
         if self.state.waits_action:
             return
-
-        if self.state.riichi and self.state.next_draw:
-            self.state.discard_tile(self.state.next_draw)
 
         if not self.state.riichi:  # update our waits if not in riichi
             waits = ready_hand(self.state.closed_tiles, self.state.kan_tiles, self.state.prevalent_wind,
@@ -151,8 +145,13 @@ class Round:
                     self.state.furiten = True
 
         # my turn
-        if self.state.next_player == "me":
+        if self.state.riichi and self.state.next_draw:  # already drawn a tile during riichi
+            self.state.discard_tile(self.state.next_draw)
+
+        elif self.state.next_player == "me":
             self.state.next_draw = self.state.draw()
+            if not self.state.next_draw:
+                return
             self.state.activate_buttons(self.state.next_draw)
             if not self.state.riichi:
                 self.state.waits_action = True
@@ -164,6 +163,7 @@ class Round:
 
         # right player
         elif self.state.next_player == "right":
+            print(f"right player draws next: {self.state.draws_left=}")
             right_draw = self.state.draw()
             if not right_draw:
                 return
@@ -173,7 +173,6 @@ class Round:
                 self.state.claimable_tile = right_draw
                 self.state.waits_action = True
             else:
-                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
         # player across
@@ -187,7 +186,6 @@ class Round:
                 self.state.claimable_tile = across_draw
                 self.state.waits_action = True
             else:
-                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
         # left player
@@ -201,13 +199,12 @@ class Round:
                 self.state.claimable_tile = left_draw
                 self.state.waits_action = True
             else:
-                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
-        self.state.print_buttons() # debug function
+        self.state.print_buttons()  # debug function
 
-        if not self.state.waits_action and self.state.draws_left == 0:
-            self.state.running = False
+        # if not self.state.waits_action and self.state.draws_left == 0:
+        #    self.state.running = False
 
     def render(self):
         self.renderer.draw_screen(self.state)

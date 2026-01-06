@@ -21,6 +21,7 @@ class Renderer:
         self.tile_images: Dict[Tile, pygame.Surface] = {}
         self.hovered_tile = None
         self.button_rects: Dict[str, pygame.Rect] = {}
+        self.restart_button_rect = pygame.Rect((SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35), (100, 35))
 
         red_fives = []
         for suit in [Suit.MAN, Suit.PIN, Suit.SOU]:
@@ -109,7 +110,7 @@ class Renderer:
         if isinstance(tile, Tile) and claimable:
             self.draw_tile_outline(tile_rect)
 
-    def draw_tile_outline(self, rect: pygame.Rect):
+    def draw_tile_outline(self, rect: pygame.Rect) -> None:
         pygame.draw.rect(
             self.screen,
             (255, 255, 0),
@@ -118,10 +119,27 @@ class Renderer:
             border_radius=6
         )
 
-    def draw_tile_glow(self, rect):
+    def draw_tile_glow(self, rect) -> None:
         highlight = pygame.Surface(rect.size, pygame.SRCALPHA)
         highlight.fill((255, 255, 0, 60))
         self.screen.blit(highlight, rect)
+
+    def draw_restart_button(self) -> None:
+        rest_x, rest_y = SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35
+        pygame.draw.rect(self.screen, (255, 255, 255), self.restart_button_rect, border_radius=8)
+        self.draw_text("Restart", (rest_x + 7, rest_y + 7), color=(0, 0, 0))
+
+    def draw_dora_indicators(self, start_loc: tuple[int, int], tiles: list[Tile], amount: int) -> None:
+        x, y = start_loc[0], start_loc[1]
+        self.draw_text("Dora indicators: ", (x, y))
+        i = 0
+        for _ in range(amount):
+            self.draw_tile(tiles[i], (x + i * TILE_SIZE[0], y + 35), "up")
+            i += 1
+        for _ in range(5 - amount):
+            self.draw_tile("back", (x + i * TILE_SIZE[0], y + 35), "up")
+            i += 1
+        pass
 
     def draw_discard_indicator(self, tile_loc: tuple[int, int]) -> None:
         pygame.draw.circle(self.screen, (255, 0, 0), (tile_loc[0] + 22, tile_loc[1] - 10), 5)
@@ -140,19 +158,16 @@ class Renderer:
         self.draw_hand(state)
         self.draw_buttons(state)
         self.display_waits(state)
+
+        if state.round_ended:
+            self.draw_menu(state)
+
         pygame.display.flip()
 
     def draw_table_info(self, state: GameState) -> None:  # the middle - winds, score and the top - dora indicators
         # dora indicators:
-        dora_x = SCREEN_WIDTH - TILE_SIZE[0] * 5
-        self.draw_text("Dora indicators: ", (dora_x, 5))
-        i = 0
-        for _ in range(state.unveiled_dora):
-            self.draw_tile(state.open_dora[i], (dora_x + i * TILE_SIZE[0], 40), "up")
-            i += 1
-        for _ in range(5 - state.unveiled_dora):
-            self.draw_tile("back", (dora_x + i * TILE_SIZE[0], 40), "up")
-            i += 1
+        dora_loc = SCREEN_WIDTH - TILE_SIZE[0] * 5, 5
+        self.draw_dora_indicators(dora_loc, state.open_dora_indicator, state.unveiled_dora)
 
         # winds:
         info_rect = pygame.Rect((450, 250), (100, 100))
@@ -270,8 +285,8 @@ class Renderer:
                 i = 0
                 row += 1
 
-    def draw_kan_tiles(self, kan_tiles: List[Tile]) -> None:
-        x, y = 50, 580 + TILE_SIZE[1] + 10
+    def draw_kan_tiles(self, kan_tiles: List[Tile], loc: tuple[int, int]) -> None:
+        x, y = loc
 
         for tile in kan_tiles:
             i = 0
@@ -307,15 +322,15 @@ class Renderer:
 
         # open tiles
         i = 0
-        x, y = 450, 580 + TILE_SIZE[1] + 10
+        x, y = x + 250, y + TILE_SIZE[1] + 10
         for combo in state.open_combos:
             for tile in combo:
                 self.draw_tile(tile, (x + i * TILE_SIZE[0], y), "up")
                 i += 1
-            x += 15 + TILE_SIZE[0]
+            x += 15
 
         # kan tiles
-        self.draw_kan_tiles(state.kan_tiles)
+        self.draw_kan_tiles(state.kan_tiles, (50, y))
 
     def draw_buttons(self, state: GameState) -> None:  # draw buttons chii, pon...
         width, height = 100, 35
@@ -328,6 +343,10 @@ class Renderer:
             self.draw_text(action, (x + 10 - len(action), top + 5))
             self.button_rects[action] = button_rect
 
+        # restart button
+        self.draw_restart_button()
+
+        # game action buttons
         if state.can_ron:
             draw_button("Ron", (200, 0, 0), y)
         if state.can_tsumo:
@@ -368,3 +387,32 @@ class Renderer:
                 self.draw_text(f"x{tiles_left}", (curr_x + 10, y + TILE_SIZE[1] + 2), color=(255, 0, 0))
             else:
                 self.draw_text(f"x{tiles_left}", (curr_x + 10, y + TILE_SIZE[1] + 2), color=(255, 255, 255))
+
+        if len(state.waits) > 5:
+            self.draw_text("...", (x + TILE_SIZE[0] * 5 + 5, 520 + TILE_SIZE[1] + 10))
+
+    def draw_menu(self, state: GameState) -> None:
+        self.screen.fill(BG_COLOR)
+        # DEBUG - MAYBE DON'T FILL THE ENTIRE SCREEN BUT CREATE DIFFERENT SIZE RECTANGLES FOR EACH CASE!!
+        self.draw_restart_button()
+
+        if not state.final_scores:  # draw
+            self.draw_text("Draw! Please restart.", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2))
+
+        else:  # we won
+            win_method = state.winning_method
+            self.draw_text(f"{win_method}", (200, 50))
+            if win_method == "Ron":
+                self.draw_tile(state.winning_tile, (250, 30), "up")
+            self.draw_hand(state, y=100)
+            self.draw_dora_indicators((100, 250), state.open_dora_indicator, state.unveiled_dora)
+            if state.riichi:
+                self.draw_dora_indicators((400, 250), state.closed_dora_indicator, state.unveiled_dora)
+
+            x, y = 100, 370
+            for han, yaku in state.final_scores:
+                self.draw_text(f"{han}  {yaku}", (x, y))
+                y += 30
+
+            total_score = sum([score[0] for score in state.final_scores])
+            self.draw_text(f"Final score: {total_score} han", (x, y + 35))
