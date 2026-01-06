@@ -293,9 +293,16 @@ def all_green(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -
     return len(green_in_hand) == len(all_tiles)
 
 
-def pinfu(sequences: List[List[Tile]], pair: List[Tile], prev_wind: str, s_wind: str, num_waits: int) -> bool:
-    if len(sequences) == 4 and num_waits == 2:
-        if pair[0].suit == Suit.WIND and pair[0].value not in [prev_wind, s_wind]:
+def pinfu(sequences: List[List[Tile]], pair: List[Tile], prev_wind: str, s_wind: str, last_draw: Tile) -> bool:
+    if len(sequences) == 4:
+        double_sided = False
+        for sequence in sequences:
+            if last_draw == sequence[0] or last_draw == sequence[2]:
+                double_sided = True
+                break
+
+        non_yakuhai = pair[0].suit == Suit.WIND and pair[0].value not in [prev_wind, s_wind]
+        if double_sided and (not pair[0].is_honour() or non_yakuhai):
             return True
     return False
 

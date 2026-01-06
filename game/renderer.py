@@ -1,7 +1,7 @@
 from game.tiles import Tile, Suit, all_tiles, winds, get_next_wind
 from game.game_state import GameState
 import pygame
-from typing import List
+from typing import List, Tuple, Dict
 
 TILE_SIZE = (48, 64)
 SCREEN_WIDTH = 1280
@@ -17,10 +17,10 @@ class Renderer:
         self.image_back = pygame.image.load("assets/Back.png").convert_alpha()
         self.image_back = pygame.transform.smoothscale(self.image_back, TILE_SIZE)
 
-        self.tile_rects: list[tuple[Tile, pygame.Rect]] = []
-        self.tile_images: dict[Tile, pygame.Surface] = {}
+        self.tile_rects: List[Tuple[Tile, pygame.Rect]] = []
+        self.tile_images: Dict[Tile, pygame.Surface] = {}
         self.hovered_tile = None
-        self.button_rects: dict[str, pygame.Rect] = {}
+        self.button_rects: Dict[str, pygame.Rect] = {}
 
         red_fives = []
         for suit in [Suit.MAN, Suit.PIN, Suit.SOU]:
@@ -66,6 +66,13 @@ class Renderer:
 
     def get_tile_image(self, tile: Tile) -> pygame.Surface:
         return self.tile_images[tile]
+
+    def tiles_drawn_count(self, tile: Tile) -> int:
+        amount = 0
+        for drawn_tile, _ in self.tile_rects:
+            if drawn_tile.suit == tile.suit and drawn_tile.value == tile.value:
+                amount += 1
+        return amount
 
     def draw_tile(self, tile: Tile | str, location: tuple[int, int], direction: str, claimable: bool = False) -> None:
         if isinstance(tile, Tile):
@@ -116,8 +123,11 @@ class Renderer:
         highlight.fill((255, 255, 0, 60))
         self.screen.blit(highlight, rect)
 
-    def draw_text(self, text: str, location: tuple[int, int]) -> None:
-        surface = self.font.render(text, True, (255, 255, 255))
+    def draw_discard_indicator(self, tile_loc: tuple[int, int]) -> None:
+        pygame.draw.circle(self.screen, (255, 0, 0), (tile_loc[0] + 22, tile_loc[1] - 10), 5)
+
+    def draw_text(self, text: str, location: tuple[int, int], color: tuple[int, int, int] = (255, 255, 255)) -> None:
+        surface = self.font.render(text, True, color)
         self.screen.blit(surface, location)
 
     def draw_screen(self, state: GameState) -> None:
@@ -129,6 +139,7 @@ class Renderer:
         self.draw_discard_piles(state)
         self.draw_hand(state)
         self.draw_buttons(state)
+        self.display_waits(state)
         pygame.display.flip()
 
     def draw_table_info(self, state: GameState) -> None:  # the middle - winds, score and the top - dora indicators
@@ -158,11 +169,9 @@ class Renderer:
         # print my wind
         next_wind = state.seat_wind
         if next_wind == state.prevalent_wind:
-            next_wind_render = self.font.render(next_wind[0], True, (255, 0, 0))
+            self.draw_text(next_wind[0], (490, 350), (255, 0, 0))
         else:
-            next_wind_render = self.font.render(next_wind[0], True, (0, 0, 0))
-
-        self.screen.blit(next_wind_render, (490, 350))
+            self.draw_text(next_wind[0], (490, 350), (0, 0, 0))
 
         # print right player wind
         next_wind = get_next_wind(next_wind)
@@ -279,15 +288,22 @@ class Renderer:
             self.draw_tile("back", (x + i * TILE_SIZE[0], y), "up")
             x += 15 + TILE_SIZE[0] * 4
 
-    def draw_hand(self, state: GameState) -> None:  # draw my hand - closed and then open tiles
+    def draw_hand(self, state: GameState, y: int = 580) -> None:  # draw my hand - closed and then open tiles
         i = 0
         # closed hand
-        x, y = 200, 580
+        x = 200
         for tile in state.hand:
-            self.draw_tile(tile, (x + i * TILE_SIZE[0], y), "up")
+            tile_pos = x + i * TILE_SIZE[0], y
+            if state.discard_for_riichi and Tile(tile.suit, tile.value) in state.discard_for_riichi:
+                self.draw_discard_indicator(tile_pos)
+            self.draw_tile(tile, tile_pos, "up")
             i += 1
         if state.next_draw:
-            self.draw_tile(state.next_draw, (x + i * TILE_SIZE[0] + 10, y), "up")
+            to_check = Tile(state.next_draw.suit, state.next_draw.value)
+            tile_pos = x + i * TILE_SIZE[0] + 10, y
+            if state.discard_for_riichi and to_check in state.discard_for_riichi:
+                self.draw_discard_indicator(tile_pos)
+            self.draw_tile(state.next_draw, tile_pos, "up")
 
         # open tiles
         i = 0
@@ -303,7 +319,7 @@ class Renderer:
 
     def draw_buttons(self, state: GameState) -> None:  # draw buttons chii, pon...
         width, height = 100, 35
-        x, y = 1000, 300
+        x, y = 1000, 150
 
         # helper
         def draw_button(action: str, color: tuple[int, int, int], top: int) -> None:
@@ -331,3 +347,24 @@ class Renderer:
             draw_button("Riichi", (245, 174, 10), y + height + 25)
         if self.button_rects:
             draw_button("Skip", (50, 50, 50), y + height * 6 + 75)
+
+    def display_waits(self, state: GameState) -> None:
+        # todo if there are no waits, return; if
+        # todo there are waits: print the waits (maybe 5 max and then "..." depends on the space)
+        if not state.waits:
+            return
+
+        x, y = 1000, 520
+        self.draw_text("Waits:", (x, y))
+        y += 30
+
+        printed = 0
+        for i in range(min(len(state.waits), 5)):
+            curr_wait = state.waits[i]
+            curr_x = x + i * TILE_SIZE[0]
+            tiles_left = 4 - self.tiles_drawn_count(curr_wait)
+            self.draw_tile(curr_wait, (curr_x, y), "up")
+            if state.furiten:
+                self.draw_text(f"x{tiles_left}", (curr_x + 10, y + TILE_SIZE[1] + 2), color=(255, 0, 0))
+            else:
+                self.draw_text(f"x{tiles_left}", (curr_x + 10, y + TILE_SIZE[1] + 2), color=(255, 255, 255))

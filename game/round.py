@@ -5,7 +5,7 @@ from game.winning_hand_checker import get_yakus, calculate_han, ready_hand, disc
 from typing import List
 from time import sleep
 import pygame
-from game.render import Renderer
+from game.renderer import Renderer
 
 PREVALENT_WIND = "East"
 seat_wind = choice(winds)
@@ -63,14 +63,23 @@ class Round:
                                         self.state.clicked_chii("right")
                                     case "Pon":
                                         self.state.clicked_pon()
-
                                     case "Kan":
                                         if self.state.next_player == "me":
                                             self.state.clicked_kan(stolen=False)
                                             self.state.next_draw = None
                                         else:
                                             self.state.clicked_kan(stolen=True)
-
+                                    case "Riichi":
+                                        self.state.clicked_riichi()
+                                        # must wait for a discard - but only a few tiles allowed
+                                        self.state.must_discard = True
+                                        self.state.reset_buttons()
+                                        print(f"{self.state.discard_for_riichi=}")
+                                        return
+                                    case "Ron":
+                                        self.state.clicked_ron()
+                                    case "Tsumo":
+                                        self.state.clicked_tsumo()
                                     case "Skip":
                                         if self.state.next_player != "me":
                                             self.state.waits_action = False
@@ -79,7 +88,15 @@ class Round:
                                         if self.state.next_player != "me":
                                             self.state.next_player = get_next_player(self.state.next_player)
                                         else:  # skipped action on our turn
-                                            self.state.must_discard = True
+                                            if not self.state.riichi:
+                                                self.state.must_discard = True
+                                            else:
+                                                self.state.waits_action = False
+
+                                        if self.state.can_ron or self.state.can_tsumo:
+                                            self.state.furiten = True
+                                            if self.state.riichi:
+                                                self.state.furiten_perm = True
 
                                 if action != "Skip":  # inspect riichi when you add it
                                     self.state.next_player = "me"
@@ -91,30 +108,59 @@ class Round:
                                 self.state.reset_buttons()
                                 self.state.claimable_tile = None
 
-
                     else:  # must discard a tile
                         if self.state.next_player == "me":
                             for tile, rect in self.renderer.tile_rects:
-                                if rect.collidepoint(mouse_pos) and 650 > mouse_pos[1] > 579:
-                                    if self.state.must_discard:
-                                        self.state.discard_tile(tile)
-                                        break
+                                if self.state.discard_for_riichi:
+                                    tile_is_allowed = Tile(tile.suit, tile.value) in self.state.discard_for_riichi
+                                    if rect.collidepoint(mouse_pos) and 650 > mouse_pos[1] > 579 and tile_is_allowed:
+                                        if self.state.must_discard:
+                                            self.state.discard_tile(tile)
+                                            break
+                                else:
+                                    if rect.collidepoint(mouse_pos) and 650 > mouse_pos[1] > 579:
+                                        if self.state.must_discard:
+                                            self.state.discard_tile(tile)
+                                            break
 
     def update(self):  # next turn
+        if self.state.have_won:
+            return
+
         if self.state.must_discard:
             self.state.waits_action = True
 
         if self.state.waits_action:
             return
 
+        if self.state.riichi and self.state.next_draw:
+            self.state.discard_tile(self.state.next_draw)
+
+        if not self.state.riichi:  # update our waits if not in riichi
+            waits = ready_hand(self.state.closed_tiles, self.state.kan_tiles, self.state.prevalent_wind,
+                               self.state.seat_wind,
+                               self.state.open_combos,
+                               is_after_kan=self.state.just_kanned,
+                               is_first_turn=self.state.first_turn,
+                               is_last_turn=self.state.last_turn,
+                               is_ron=True,
+                               num_waits=1, num_kans=len(self.state.kan_tiles) + len(self.state.open_kan_tiles))
+            self.state.waits = waits
+            for wait in waits:
+                if wait in self.state.discard_pile:
+                    self.state.furiten = True
+
         # my turn
         if self.state.next_player == "me":
-            print("we draw now")
             self.state.next_draw = self.state.draw()
             self.state.activate_buttons(self.state.next_draw)
-            self.state.waits_action = True
-            if not self.state.can_kan and not self.state.can_riichi and not self.state.can_tsumo:
-                self.state.must_discard = True
+            if not self.state.riichi:
+                self.state.waits_action = True
+                if not self.state.can_kan and not self.state.can_riichi and not self.state.can_tsumo:
+                    self.state.must_discard = True
+            else:
+                if self.state.can_kan or self.state.can_tsumo:
+                    self.state.waits_action = True
 
         # right player
         elif self.state.next_player == "right":
@@ -127,6 +173,7 @@ class Round:
                 self.state.claimable_tile = right_draw
                 self.state.waits_action = True
             else:
+                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
         # player across
@@ -140,6 +187,7 @@ class Round:
                 self.state.claimable_tile = across_draw
                 self.state.waits_action = True
             else:
+                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
         # left player
@@ -153,14 +201,19 @@ class Round:
                 self.state.claimable_tile = left_draw
                 self.state.waits_action = True
             else:
+                sleep(1)
                 self.state.next_player = get_next_player(self.state.next_player)
 
-        self.state.print_buttons()  # debug function
+        self.state.print_buttons() # debug function
+
+        if not self.state.waits_action and self.state.draws_left == 0:
+            self.state.running = False
 
     def render(self):
         self.renderer.draw_screen(self.state)
 
 
+'''
 def play_round() -> (List[str], int, List[Tile], List[Tile]):
     deck = GameState()
     hand = deck.get_starting_hand()
@@ -312,3 +365,4 @@ def play_round() -> (List[str], int, List[Tile], List[Tile]):
 
     # no win, sorry
     return [], 0, [], []
+'''

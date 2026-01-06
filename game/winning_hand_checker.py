@@ -176,7 +176,7 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     curr_yakus.append("Three quads")
                 if len(kan_tiles) == 4:
                     curr_yakus.append("Four quads")
-                if pinfu(sequences, pair, prev_wind, s_wind, num_waits) and open_sequences == []:
+                if pinfu(sequences, pair, prev_wind, s_wind, last_draw) and open_sequences == []:
                     curr_yakus.append("Pinfu")
                 if nine_gates(rest, pair):
                     curr_yakus.append("Nine gates")
@@ -233,12 +233,25 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
 
 
 def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-               open_combos: List[List[Tile]]) -> List[Tile]:
+               open_combos: List[List[Tile]],
+               is_after_kan: bool = False,
+               is_first_turn: bool = False,
+               is_last_turn: bool = False,
+               is_ron: bool = False,
+               num_waits: int = 1, num_kans: int = 1
+               ) -> List[Tile]:
     waits = []
     for tile in all_tiles:
         hand.append(tile)
         hand.sort()
-        if get_yakus(hand, kan_tiles, prev_wind, s_wind, open_combos, last_draw=tile):
+        if get_yakus(hand, kan_tiles, prev_wind, s_wind, open_combos,
+                     last_draw=tile,
+                     is_after_kan=is_after_kan,
+                     is_first_turn=is_first_turn,
+                     is_last_turn=is_last_turn,
+                     is_ron=is_ron,
+                     num_waits=num_waits,
+                     num_kans=num_kans):
             waits.append(tile)
         hand.remove(tile)
     waits.sort()
@@ -246,11 +259,18 @@ def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: 
 
 
 def discard_for_ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-                           open_combos: List[List[Tile]]) -> List[Tile]:
+                           open_combos: List[List[Tile]],
+                           is_after_kan: bool = False,
+                           is_first_turn: bool = False,
+                           is_last_turn: bool = False,
+                           is_ron: bool = False,
+                           num_waits: int = 1, num_kans: int = 1
+                           ) -> List[Tile]:
     to_discard = []
     for tile in hand:
         hand.remove(tile)
-        if ready_hand(hand, kan_tiles, prev_wind, s_wind, open_combos):
+        if ready_hand(hand, kan_tiles, prev_wind, s_wind, open_combos,
+                      is_after_kan, is_first_turn, is_last_turn, is_ron, num_waits, num_kans):
             to_discard.append(tile)
         hand.append(tile)
         hand.sort()

@@ -63,17 +63,21 @@ class YakuTests(unittest.TestCase):
         hand += [Tile(Suit.PIN, i) for i in range(4, 7)]
         hand += [Tile(Suit.SOU, i) for i in range(2, 5)]
         hand += [Tile(Suit.WIND, "North") for _ in range(2)]
-
+        hand.sort()
+        print(f"{hand=} last_draw= {hand[1]}")
         # Act
-        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0], num_waits=2)
-        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[13], num_waits=1)
-        yakus3 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[1], num_waits=1)
-
+        yakus = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[0])  # draw a tile at start of sequence
+        yakus2 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[13])  # draw the "pair" tile
+        yakus3 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[1])  # same as case 1, but with overlap
+        yakus4 = get_yakus(hand, [], PREVALENT_WIND, seat_wind, [], hand[10])  # draw middle tile of sequence
+        yakus5 = get_yakus(hand, [], PREVALENT_WIND, "North", [], hand[0])  # pair is "yakuhai" tile
 
         # Assert
         self.assertTrue("Pinfu" in yakus)
         self.assertTrue("Pinfu" not in yakus2)
-        self.assertTrue("Pinfu" not in yakus3)
+        self.assertTrue("Pinfu" in yakus3)
+        self.assertTrue("Pinfu" not in yakus4)
+        self.assertTrue("Pinfu" not in yakus5)
 
     def test_04_seven_pairs(self):
         # Arrange

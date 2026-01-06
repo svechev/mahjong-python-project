@@ -2,7 +2,8 @@ from game.tiles import *
 from random import shuffle
 from typing import List
 from random import choice
-from game.winning_hand_checker import get_yakus, ready_hand
+from game.winning_hand_checker import get_yakus, ready_hand, discard_for_ready_hand
+from time import sleep
 
 # todo ron, tsumo, riichi left
 
@@ -54,10 +55,10 @@ class GameState:
         self.riichi = False
         self.double_riichi = False
         self.ippatsu = False
-        self.furiten_temp = False
         self.furiten = False
         self.waits = []
         self.winning_yakus = []
+        self.have_won = False
 
         # states for buttons, events will make them True, if we click skip, everything goes back to False
         self.can_chii = []  # different options for chii
@@ -65,7 +66,8 @@ class GameState:
         self.can_kan: Tile | bool = False
         self.can_ron: Tile | bool = False
         self.can_tsumo: Tile | bool = False
-        self.can_riichi = []  # will store the tiles that can be discarded after calling riichi
+        self.can_riichi = False
+        self.discard_for_riichi = []  # the tiles that can be discarded after calling riichi
         self.must_discard = False
         self.waits_action = False
         self.claimable_tile: Tile | None = None
@@ -84,20 +86,21 @@ class GameState:
             self.next_player = "right"
 
         # DEBUG PURPOSES - great hand
-        '''
-        self.hand = [Tile(Suit.MAN, 2) for _ in range(3)]
+        self.hand = [Tile(Suit.WIND, "East") for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 3) for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
-        self.hand += [Tile(Suit.MAN, i) for i in range(5, 8)]
-        self.hand += [Tile(Suit.MAN, 7) for _ in range(2)]
-        self.hand[8] = Tile(Suit.MAN, 5, is_red_five=True)
+        self.hand += [Tile(Suit.SOU, i) for i in range(5, 7)]
+        self.hand += [Tile(Suit.MAN, 7) for _ in range(3)]
+        self.hand += [Tile(Suit.MAN, 9)]
+        self.hand[3] = Tile(Suit.MAN, 5, is_red_five=True)
+        self.hand.sort()
         self.closed_tiles = self.hand.copy()
-        self.wall[0] = Tile(Suit.MAN, 7)
-        self.wall[1] = Tile(Suit.MAN, 7)
-        self.wall[3] = Tile(Suit.MAN, 3)
-        '''
+        self.wall[0] = Tile(Suit.MAN, 9)
+        self.wall[1] = Tile(Suit.SOU, 7)
+        self.wall[5] = Tile(Suit.WIND, "East")
 
         # DEBUG PURPOSES - kan
+        '''
         self.hand = [Tile(Suit.SOU, 5) for _ in range(2)]
         self.hand += [Tile(Suit.SOU, 6) for _ in range(2)]
         self.hand[0] = Tile(Suit.SOU, 5, is_red_five=True)
@@ -113,6 +116,7 @@ class GameState:
         self.wall[4] = Tile(Suit.SOU, 5)
         self.wall[5] = Tile(Suit.MAN, 4)
         self.dead_wall[0] = Tile(Suit.MAN, 9)
+        '''
 
     def get_dora_indicators(self) -> (List[Tile], List[Tile]):
         open_dora_tiles, closed_dora_tiles = self.wall[:5], self.wall[5:10]
@@ -131,26 +135,28 @@ class GameState:
         self.can_kan = False
         self.can_ron = False
         self.can_tsumo = False
-        self.can_riichi = []
+        self.can_riichi = False
+        if not self.riichi:
+            self.discard_for_riichi = []
         self.winning_yakus = []
 
     def activate_buttons(self, new_tile: Tile) -> None:
         print("before activating buttons: ")
-        print(f"{self.waits=}")
-        print(f"{self.winning_yakus=}")
+        print(f"{self.discard_for_riichi=}")
         if self.next_player == "me":
             self.check_tsumo(new_tile)
-            self.check_riichi(new_tile)
+            if not self.riichi:
+                self.check_riichi(new_tile)
             if self.draws_left > 0:
-                print(f"checking for kan: {self.closed_tiles=}, {self.next_draw=}")
                 self.check_kan(new_tile, stolen=False)
-        else:
+        else:  # opponent discarded a tile
             self.check_ron(new_tile)
-            if self.draws_left > 0:
-                self.check_pon(new_tile)
-                self.check_kan(new_tile, stolen=True)
-        if self.next_player == "left" and self.draws_left > 0:  # if it's left player's turn
-            self.check_chii(new_tile)
+            if not self.riichi:
+                if self.draws_left > 0:
+                    self.check_pon(new_tile)
+                    self.check_kan(new_tile, stolen=True)
+                    if self.next_player == "left":  # if it's left player's turn
+                        self.check_chii(new_tile)
 
     # debug function
     def print_buttons(self):
@@ -159,23 +165,19 @@ class GameState:
         if self.can_tsumo:
             print(f"{self.can_tsumo=}, {self.winning_yakus}")
         if self.can_riichi:
-            print(f"{self.can_riichi=}")
+            print(f"{self.discard_for_riichi=}")
 
     def has_buttons(self) -> bool:
         if self.can_tsumo or self.can_ron or self.can_kan or self.can_pon or self.can_chii:
             return True
         if self.next_player == "me" and self.can_riichi:
             return True
+        return False
 
     def draw(self) -> Tile | None:
         if self.draws_left == 0:  # can't play anymore
             self.running = False
             return
-
-        if self.next_player == "me":
-            waits = ready_hand(self.closed_tiles, self.kan_tiles, self.prevalent_wind, self.seat_wind,
-                               self.open_combos)
-            self.waits = waits
 
         if self.just_kanned:
             tile = self.dead_wall[0]
@@ -187,7 +189,6 @@ class GameState:
         self.draws_left -= 1
         if self.draws_left == 0:
             self.last_turn = True
-        print(f"{self.open_combos=}")
         return tile
 
     def discard_tile(self, to_discard: Tile) -> None:
@@ -195,7 +196,6 @@ class GameState:
             self.discard_pile.append(self.next_draw)
             waits = ready_hand(self.closed_tiles, self.kan_tiles, self.prevalent_wind, self.seat_wind, self.open_combos)
             self.waits = waits
-            if self.waits: print(f"{self.waits=}")
 
         else:
             for tile in self.hand:
@@ -218,10 +218,17 @@ class GameState:
         self.next_player = get_next_player(self.next_player)
         if self.first_turn:
             self.first_turn = False
-        if self.ippatsu:
+
+        # cancel ippatsu when discarding (except when we just called riichi)
+        if not self.discard_for_riichi and self.ippatsu:
             self.ippatsu = False
+        self.discard_for_riichi = []
+
         if self.just_kanned:
             self.just_kanned = False
+
+        if not self.riichi:
+            self.furiten = False
 
     def pop_discard_pile(self) -> None:
         if self.next_player == "left":
@@ -235,22 +242,21 @@ class GameState:
         removed = remove_red_fives(self.closed_tiles)
 
         tile_to_check = Tile(potential_tile.suit, potential_tile.value)
-        if stolen and self.closed_tiles.count(tile_to_check) == 3:
-            print(f"{potential_tile=}")
+        if stolen and not self.riichi and self.closed_tiles.count(tile_to_check) == 3:
             self.can_kan = potential_tile
         if not stolen:
+            add_tile_to_hand(self.closed_tiles, tile_to_check)
+
             # check for open kan
-            for combo in self.open_combos:
-                if combo.count(tile_to_check) >= 2:  # if a combo has a repeating tile, it's a triplet
-                    print(f"{potential_tile=}")
-                    self.can_kan = potential_tile
+            if not self.riichi:
+                for combo in self.open_combos:
+                    # if a combo has a repeating tile, it's a triplet; and if that tile is in our hand, we can kan
+                    if combo[0] == combo[1] and combo[0] in self.closed_tiles:
+                        self.can_kan = potential_tile
 
             # check for closed kan
-            add_tile_to_hand(self.closed_tiles, tile_to_check)
-            print(f"after adding new tile (red fives removed): {self.closed_tiles=}")
             quad_tiles = [tile for tile in self.closed_tiles if self.closed_tiles.count(tile) == 4]
             if quad_tiles:
-                print(f"{quad_tiles[0]=}")
                 self.can_kan = quad_tiles[0]
 
             remove_tile_from_hand(self.closed_tiles, tile_to_check)
@@ -264,8 +270,12 @@ class GameState:
         add_red_fives(self.closed_tiles, removed)
 
     def check_ron(self, potential_tile: Tile) -> None:
+        if self.furiten:
+            return
+
         add_tile_to_hand(self.closed_tiles, potential_tile)
 
+        is_ron = False if self.riichi else True
         yakus = get_yakus(hand=self.closed_tiles,
                           kan_tiles=self.kan_tiles,
                           prev_wind=self.prevalent_wind,
@@ -274,13 +284,17 @@ class GameState:
                           last_draw=potential_tile,
                           is_first_turn=self.first_turn,
                           is_last_turn=self.last_turn,
-                          is_ron=True,
+                          is_ron=is_ron,
                           num_waits=len(self.waits),
                           num_kans=len(self.kan_tiles) + len(self.open_kan_tiles))
-        self.winning_yakus = yakus
-        if self.winning_yakus:
-            print(f"{self.closed_tiles=}")
+
+        if yakus:
             self.can_ron = potential_tile
+
+        if self.riichi and "Tsumo" in yakus:
+            yakus.remove("Tsumo")
+
+        self.winning_yakus = yakus
 
         remove_tile_from_hand(self.closed_tiles, potential_tile)
 
@@ -301,7 +315,6 @@ class GameState:
                           num_kans=len(self.kan_tiles) + len(self.kan_tiles) + len(self.open_kan_tiles))
         self.winning_yakus = yakus
         if self.winning_yakus:
-            print(f"{self.closed_tiles=}")
             self.can_tsumo = drawn_tile
 
         remove_tile_from_hand(self.closed_tiles, drawn_tile)
@@ -339,13 +352,22 @@ class GameState:
         add_red_fives(self.closed_tiles, removed)
 
     def check_riichi(self, potential_tile: Tile) -> None:
-        pass
+        if self.open_combos or self.draws_left < 4:
+            return
+
+        add_tile_to_hand(self.closed_tiles, potential_tile)
+        to_discard = discard_for_ready_hand(self.closed_tiles, self.kan_tiles, self.prevalent_wind, self.seat_wind,
+                                            self.open_combos)
+        if to_discard:
+            self.can_riichi = True
+            self.discard_for_riichi = to_discard
+        self.closed_tiles.remove(potential_tile)
 
     def clicked_ron(self) -> None:
-        pass
+        self.have_won = True
 
     def clicked_tsumo(self) -> None:
-        pass
+        self.have_won = True
 
     def clicked_pon(self) -> None:
         open_triplet = [self.claimable_tile]
@@ -380,7 +402,6 @@ class GameState:
             add_tile_to_hand(self.hand, self.next_draw)
             removed = remove_red_fives(self.hand)
             tile_quad = [tile for tile in self.hand if self.hand.count(tile) == 4]
-            print(f"{tile_quad=}")
 
             if tile_quad:  # closed kan
                 is_closed = True
@@ -395,12 +416,11 @@ class GameState:
                     for tile in self.hand:
                         if triplet[0] == tile:
                             add_tile_to_hand(triplet, tile)
-                remove_tile_from_hand(self.hand, self.next_draw)
+                            remove_tile_from_hand(self.hand, triplet[0])
 
             add_red_fives(self.hand, removed)
 
         triplet.sort()
-        print(f"{triplet=}")
         if triplet[3].value == 5:
             triplet[3] = Tile(triplet[3].suit, 5, is_red_five=True)
 
@@ -413,6 +433,7 @@ class GameState:
         self.closed_tiles.sort()
         self.just_kanned = True
         self.next_draw = None
+        self.unveiled_dora += 1
 
     def clicked_chii(self, option: str) -> None:
         to_claim = self.claimable_tile
@@ -465,4 +486,6 @@ class GameState:
         self.pop_discard_pile()
 
     def clicked_riichi(self) -> None:
-        pass
+        self.riichi = True
+        if self.first_turn:
+            self.double_riichi = True
