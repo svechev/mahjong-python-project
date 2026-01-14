@@ -1,5 +1,4 @@
-from game.tiles import Suit, Tile, split_hand
-from typing import List
+from src.logic.tile import Suit, Tile, split_hand
 
 yaku_1han = ["All simples", "Riichi", "Ippatsu", "Prevalent wind", "Seat wind", "White dragon", "Green dragon",
              "Red dragon", "After a kan", "Under the sea", "Tsumo", "Pure double sequence", "Pinfu",
@@ -35,13 +34,13 @@ for yaku in double_yakuman_list:
     yaku_values[yaku] = 26
 
 
-def winning_combination(sequences: List[List[Tile]], triplets: List[List[Tile]], hand: List[Tile],
-                        rest: List[Tile], pair: List[Tile]) -> bool:
+def winning_combination(sequences: list[list[Tile]], triplets: list[list[Tile]], hand: list[Tile],
+                        rest: list[Tile], pair: list[Tile]) -> bool:
     total_combos = len(sequences) + len(triplets)
     return total_combos == 4 or seven_pairs(hand, []) or thirteen_orphans(hand) or nine_gates(rest, pair)
 
 
-def seven_pairs(hand: List[Tile], add_pairs: List[Tile]) -> bool:
+def seven_pairs(hand: list[Tile], add_pairs: list[Tile]) -> bool:
     if len(hand) < 14:  # no kan allowed, no open tiles allowed
         return False
     pairs = [hand[i] == hand[i + 1] for i in range(0, 14, 2)]
@@ -53,16 +52,16 @@ def seven_pairs(hand: List[Tile], add_pairs: List[Tile]) -> bool:
         return False
 
 
-def all_simples(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def all_simples(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     simples = [tile for tile in [*hand, *kan_tiles, *open_tiles] if not tile.is_honour() and not tile.is_terminal()]
     return len(simples) == len([*hand, *kan_tiles, *open_tiles])
 
 
-def all_triplets(triplets: List[List[Tile]]) -> bool:
+def all_triplets(triplets: list[list[Tile]]) -> bool:
     return len(triplets) == 4
 
 
-def half_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def half_flush(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     sorted_hand = [*list(hand), *kan_tiles, *open_tiles]
     sorted_hand.sort()
     man, pin, sou, honours = split_hand(sorted_hand)
@@ -70,7 +69,7 @@ def half_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) 
     return empty_suits == 2 and honours
 
 
-def full_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def full_flush(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     sorted_hand = [*list(hand), *kan_tiles, *open_tiles]
     sorted_hand.sort()
     man, pin, sou, honours = split_hand(sorted_hand)
@@ -78,50 +77,50 @@ def full_flush(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) 
     return empty_suits == 2 and not honours
 
 
-def white_dragon(triplets: List[List[Tile]]) -> bool:
+def white_dragon(triplets: list[list[Tile]]) -> bool:
     dragons = [triplet for triplet in triplets if triplet[0] == Tile(Suit.DRAGON, "White")]
     return len(dragons) > 0
 
 
-def green_dragon(triplets: List[List[Tile]]) -> bool:
+def green_dragon(triplets: list[list[Tile]]) -> bool:
     dragons = [triplet for triplet in triplets if triplet[0] == Tile(Suit.DRAGON, "Green")]
     return len(dragons) > 0
 
 
-def red_dragon(triplets: List[List[Tile]]) -> bool:
+def red_dragon(triplets: list[list[Tile]]) -> bool:
     dragons = [triplet for triplet in triplets if triplet[0] == Tile(Suit.DRAGON, "Red")]
     return len(dragons) > 0
 
 
-def big_three_dragons(triplets: List[List[Tile]]) -> bool:
+def big_three_dragons(triplets: list[list[Tile]]) -> bool:
     return white_dragon(triplets) and green_dragon(triplets) and red_dragon(triplets)
 
 
-def little_three_dragons(triplets: List[List[Tile]], pair: List[Tile]) -> bool:
+def little_three_dragons(triplets: list[list[Tile]], pair: list[Tile]) -> bool:
     filtered = [combo for combo in [*triplets, pair] if combo[0].suit == Suit.DRAGON]
     return len(filtered) == 3 and pair[0].suit == Suit.DRAGON
 
 
-def prevalent_wind(triplets: List[List[Tile]], prev_wind: str) -> bool:
+def prevalent_wind(triplets: list[list[Tile]], prev_wind: str) -> bool:
     for triplet in triplets:
         if triplet[0].value == prev_wind:
             return True
     return False
 
 
-def seat_wind(triplets: List[List[Tile]], s_wind: str) -> bool:
+def seat_wind(triplets: list[list[Tile]], s_wind: str) -> bool:
     for triplet in triplets:
         if triplet[0].value == s_wind:
             return True
     return False
 
 
-def four_big_winds(triplets: List[List[Tile]]):
+def four_big_winds(triplets: list[list[Tile]]):
     wind_triplets = [triplet for triplet in triplets if triplet[0].suit == Suit.WIND]
     return len(wind_triplets) == 4
 
 
-def all_terminals_and_honors(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def all_terminals_and_honors(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     sorted_tiles = [*list(hand), *kan_tiles, *open_tiles]
     sorted_tiles.sort()
     filtered = [tile for tile in sorted_tiles if tile.is_honour() or tile.is_terminal()]
@@ -129,20 +128,20 @@ def all_terminals_and_honors(hand: List[Tile], kan_tiles: List[Tile], open_tiles
     return len(filtered) == len(sorted_tiles) and 1 <= len(honours) <= len(sorted_tiles)-1
 
 
-def all_terminals(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def all_terminals(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     all_tiles = [*hand, *kan_tiles, *open_tiles]
     terminals = [tile for tile in all_tiles if tile.is_terminal()]
     return len(terminals) == len(all_tiles)
 
 
-def all_honors(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def all_honors(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     all_tiles = [*hand, *kan_tiles, *open_tiles]
     honours = [tile for tile in hand if tile.is_honour()]
     return len(honours) == len(all_tiles)
 
 
-def half_outside_hand(sequences: List[List[Tile]], triplets: List[List[Tile]], pair: List[Tile],
-                      pairs: List[Tile]) -> bool:
+def half_outside_hand(sequences: list[list[Tile]], triplets: list[list[Tile]], pair: list[Tile],
+                      pairs: list[Tile]) -> bool:
     if pairs:
         # special case for seven pairs
         filtered = [pair for pair in pairs if pair.is_honour() or pair.is_terminal()]
@@ -168,8 +167,8 @@ def half_outside_hand(sequences: List[List[Tile]], triplets: List[List[Tile]], p
         return False
 
 
-def fully_outside_hand(sequences: List[List[Tile]], triplets: List[List[Tile]], pair: List[Tile],
-                       pairs: List[Tile]) -> bool:
+def fully_outside_hand(sequences: list[list[Tile]], triplets: list[list[Tile]], pair: list[Tile],
+                       pairs: list[Tile]) -> bool:
     if pairs:  # special case for seven pairs
         terminals = [pair for pair in pairs if pair.is_terminal()]
         return len(terminals) == 6
@@ -183,27 +182,26 @@ def fully_outside_hand(sequences: List[List[Tile]], triplets: List[List[Tile]], 
         return True
 
 
-def four_little_winds(triplets: List[List[Tile]], pair: List[Tile]) -> bool:
+def four_little_winds(triplets: list[list[Tile]], pair: list[Tile]) -> bool:
     filtered = [combo for combo in [*triplets, pair] if combo[0].suit == Suit.WIND]
     return len(filtered) == 4 and pair[0].suit == Suit.WIND
 
 
-def pure_double_sequence(sequences: List[List[Tile]]) -> bool:
+def pure_double_sequence(sequences: list[list[Tile]]) -> bool:
     # do 2 different sequences have the same elements?
     if len(sequences) <= 1:
         return False
 
     for i in range(len(sequences) - 1):
-        same = True
         for j in range(i+1, len(sequences)):
-            if sequences[i][0] != sequences[j][0]:
-                same = False
-        if same:
-            return True
+            if sequences[i][0] == sequences[j][0]:
+                return True
+
     return False
 
 
-def mixed_triple_sequence(sequences: List[List[Tile]]) -> bool:
+'''
+def mixed_triple_sequence(sequences: list[list[Tile]]) -> bool:
     if len(sequences) < 3:
         return False
 
@@ -221,24 +219,43 @@ def mixed_triple_sequence(sequences: List[List[Tile]]) -> bool:
         return False
 
     first_tiles = [sequence[0] for sequence in sequences]
-    return Tile(Suit.MAN, common_sequence) in first_tiles and Tile(Suit.PIN, common_sequence) in first_tiles and \
-           Tile(Suit.SOU, common_sequence) in first_tiles
+    man_condition = Tile(Suit.MAN, common_sequence) in first_tiles
+    pin_condition = Tile(Suit.PIN, common_sequence) in first_tiles
+    sou_condition = Tile(Suit.SOU, common_sequence) in first_tiles
+    return man_condition and pin_condition and sou_condition
+'''
 
 
-def twice_pure_double_sequence(sequences: List[List[Tile]], pairs: List[Tile]) -> bool:
+def mixed_triple_sequence(sequences: list[list[Tile]]) -> bool:
+    if len(sequences) < 3:
+        return False
+
+    val_map = {i: [] for i in range(1, 8)}
+    for sequence in sequences:
+        first_tile = sequence[0]
+        first_val = first_tile.value
+        val_map[first_val].append(first_tile.suit)
+
+    for suits in val_map.values():
+        if Suit.MAN in suits and Suit.PIN in suits and Suit.SOU in suits:
+            return True
+    return False
+
+
+def twice_pure_double_sequence(sequences: list[list[Tile]], pairs: list[Tile]) -> bool:
     return bool(sequences) and bool(pairs)
 
 
-def thirteen_orphans(hand: List[Tile]) -> bool:
+def thirteen_orphans(hand: list[Tile]) -> bool:
     honours_terminals = [tile for tile in hand if tile.is_honour() or tile.is_terminal()]
     return len(set(honours_terminals)) >= 13
 
 
-def thirteen_wait_thirteen_orphans(hand: List[Tile], last_draw: Tile, pair: List[Tile]) -> bool:
+def thirteen_wait_thirteen_orphans(hand: list[Tile], last_draw: Tile, pair: list[Tile]) -> bool:
     return thirteen_orphans(hand) and last_draw == pair[0]
 
 
-def triple_triplets(triplets: List[List[Tile]]) -> bool:
+def triple_triplets(triplets: list[list[Tile]]) -> bool:
     if len(triplets) < 3:
         return False
 
@@ -256,11 +273,13 @@ def triple_triplets(triplets: List[List[Tile]]) -> bool:
         return False
 
     first_tiles = [triplet[0] for triplet in triplets]
-    return Tile(Suit.MAN, common_triplet) in first_tiles and Tile(Suit.PIN, common_triplet) in first_tiles and \
-           Tile(Suit.SOU, common_triplet) in first_tiles
+    man_condition = Tile(Suit.MAN, common_triplet) in first_tiles
+    pin_condition = Tile(Suit.PIN, common_triplet) in first_tiles
+    sou_condition = Tile(Suit.SOU, common_triplet) in first_tiles
+    return man_condition and pin_condition and sou_condition
 
 
-def pure_straight(sequences: List[List[Tile]]) -> bool:
+def pure_straight(sequences: list[list[Tile]]) -> bool:
     if len(sequences) < 3:
         return False
 
@@ -278,11 +297,13 @@ def pure_straight(sequences: List[List[Tile]]) -> bool:
         return False
 
     first_tiles = [sequence[0] for sequence in sequences]
-    return Tile(common_suit, 1) in first_tiles and Tile(common_suit, 4) in first_tiles and \
-           Tile(common_suit, 7) in first_tiles
+    man_condition = Tile(common_suit, 1) in first_tiles
+    pin_condition = Tile(common_suit, 4) in first_tiles
+    sou_condition = Tile(common_suit, 7) in first_tiles
+    return man_condition and pin_condition and sou_condition
 
 
-def all_green(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -> bool:
+def all_green(hand: list[Tile], kan_tiles: list[Tile], open_tiles: list[Tile]) -> bool:
     green_tiles = [Tile(Suit.SOU, i) for i in range(2, 5)]
     green_tiles.append(Tile(Suit.SOU, 6))
     green_tiles.append(Tile(Suit.SOU, 8))
@@ -293,22 +314,23 @@ def all_green(hand: List[Tile], kan_tiles: List[Tile], open_tiles: List[Tile]) -
     return len(green_in_hand) == len(all_tiles)
 
 
-def pinfu(sequences: List[List[Tile]], pair: List[Tile], prev_wind: str, s_wind: str, last_draw: Tile) -> bool:
+def pinfu(sequences: list[list[Tile]], pair: list[Tile], prev_wind: str, s_wind: str, last_draw: Tile) -> bool:
     if len(sequences) == 4:
-        double_sided = False
+        double_sided_wait = False
         for sequence in sequences:
-            val = last_draw.value
-            if (last_draw == sequence[0] and val != 3) or (last_draw == sequence[2] and val != 3):
-                double_sided = True
-                break
+            if last_draw in sequence:
+                val = last_draw.value
+                if (last_draw == sequence[0] and val != 7) or (last_draw == sequence[2] and val != 3):
+                    double_sided_wait = True
+                    break
 
         non_yakuhai = pair[0].suit == Suit.WIND and pair[0].value not in [prev_wind, s_wind]
-        if double_sided and (not pair[0].is_honour() or non_yakuhai):
+        if double_sided_wait and (not pair[0].is_honour() or non_yakuhai):
             return True
     return False
 
 
-def nine_gates(rest: List[Tile], pair: List[Tile]) -> bool:
+def nine_gates(rest: list[Tile], pair: list[Tile]) -> bool:
     tiles_13 = list(rest)
     tiles_13.append(pair[0])
     tiles_13.sort()
@@ -318,8 +340,5 @@ def nine_gates(rest: List[Tile], pair: List[Tile]) -> bool:
     return tiles_13 == desired
 
 
-def true_nine_gates(rest: List[Tile], pair: List[Tile], last_draw: Tile) -> bool:
+def true_nine_gates(rest: list[Tile], pair: list[Tile], last_draw: Tile) -> bool:
     return nine_gates(rest, pair) and last_draw in pair
-
-
-

@@ -1,6 +1,6 @@
 import unittest
 
-from game.tiles import *
+from src.logic.tile import *
 from random import shuffle
 
 # todo write some more tests

@@ -1,19 +1,16 @@
-from game.tiles import print_hand, winds, Tile, get_next_wind
+from src.logic.tile import winds, Tile
 from random import choice
-from game.game_state import GameState, get_next_player
-from game.winning_hand_checker import get_yakus, calculate_han, ready_hand, discard_for_ready_hand
-from typing import List
+from src.logic.game_state import GameState, get_next_player
+from src.rules.winning_hand import ready_hand
 from time import sleep
 import pygame
-from game.renderer import Renderer
+from src.game_runner.renderer import Renderer
 
 PREVALENT_WIND = "East"
 seat_wind = choice(winds)
 
-# todo try to kan a 5
 
-
-class Game:
+class Round:
     def __init__(self):
         pygame.init()
 

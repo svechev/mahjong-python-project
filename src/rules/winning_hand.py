@@ -1,17 +1,17 @@
-from game.tiles import all_tiles, dragon_tiles, wind_tiles
-from game.tiles import add_red_fives, remove_red_fives
+from src.logic.tile import all_tiles, dragon_tiles, wind_tiles
+from src.logic.tile import add_red_fives, remove_red_fives
 from collections import Counter
-from game.yaku_checker import *
+from src.rules.yaku import *
 
 
-def calculate_han(yakus: List[str]) -> int:
+def calculate_han(yakus: list[str]) -> int:
     han = 0
     for curr_yaku in yakus:
         han += yaku_values[curr_yaku]
     return han
 
 
-def get_sequences(suit: Suit, count: Counter, sequences: List[List[Tile]]):
+def get_sequences(suit: Suit, count: Counter, sequences: list[list[Tile]]):
     for tile_1 in [Tile(suit, i) for i in range(1, 8)]:  # last possible start tile is 7
         tile_2 = tile_1.dora()
         tile_3 = tile_2.dora()
@@ -22,7 +22,7 @@ def get_sequences(suit: Suit, count: Counter, sequences: List[List[Tile]]):
             count[tile_3] -= 1
 
 
-def get_triplets(suit: Suit, count: Counter, triplets: List[List[Tile]]):
+def get_triplets(suit: Suit, count: Counter, triplets: list[list[Tile]]):
     if suit in [Suit.DRAGON, Suit.WIND]:
         possible_tiles = [tile for tile in [*dragon_tiles, *wind_tiles]]
     else:
@@ -34,7 +34,7 @@ def get_triplets(suit: Suit, count: Counter, triplets: List[List[Tile]]):
             count[tile] -= 3
 
 
-def get_combos(rest: List[Tile], sequences_first: bool) -> (List[Tile], List[Tile]):
+def get_combos(rest: list[Tile], sequences_first: bool) -> (list[Tile], list[Tile]):
     man, pin, sou, honours = split_hand(rest)
     sequences, triplets = [], []
     for suit_tiles in [man, pin, sou]:
@@ -56,13 +56,13 @@ def get_combos(rest: List[Tile], sequences_first: bool) -> (List[Tile], List[Til
     return sequences, triplets
 
 
-def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-              open_combos: List[List[Tile]], last_draw: Tile,
+def get_yakus(hand: list[Tile], kan_tiles: list[Tile], prev_wind: str, s_wind: str,
+              open_combos: list[list[Tile]], last_draw: Tile,
               is_after_kan: bool = False,
               is_first_turn: bool = False,
               is_last_turn: bool = False,
               is_ron: bool = False,
-              num_waits: int = 1, num_kans: int = 1) -> (List[str]):
+              num_waits: int = 1, num_kans: int = 1) -> (list[str]):
 
     removed = remove_red_fives(hand)
 
@@ -227,19 +227,17 @@ def get_yakus(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: s
                     yakus = curr_yakus
 
     add_red_fives(hand, removed)
-    # if yakus:
-        # print(f"{hand=}, {open_combos=}, {yakus=}")
     return yakus
 
 
-def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-               open_combos: List[List[Tile]],
+def ready_hand(hand: list[Tile], kan_tiles: list[Tile], prev_wind: str, s_wind: str,
+               open_combos: list[list[Tile]],
                is_after_kan: bool = False,
                is_first_turn: bool = False,
                is_last_turn: bool = False,
                is_ron: bool = False,
                num_waits: int = 1, num_kans: int = 1
-               ) -> List[Tile]:
+               ) -> list[Tile]:
     waits = []
     for tile in all_tiles:
         hand.append(tile)
@@ -258,14 +256,14 @@ def ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: 
     return waits
 
 
-def discard_for_ready_hand(hand: List[Tile], kan_tiles: List[Tile], prev_wind: str, s_wind: str,
-                           open_combos: List[List[Tile]],
+def discard_for_ready_hand(hand: list[Tile], kan_tiles: list[Tile], prev_wind: str, s_wind: str,
+                           open_combos: list[list[Tile]],
                            is_after_kan: bool = False,
                            is_first_turn: bool = False,
                            is_last_turn: bool = False,
                            is_ron: bool = False,
                            num_waits: int = 1, num_kans: int = 1
-                           ) -> List[Tile]:
+                           ) -> list[Tile]:
     to_discard = []
     for tile in hand:
         hand.remove(tile)

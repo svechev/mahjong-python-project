@@ -1,7 +1,6 @@
 from __future__ import annotations
 from enum import Enum
 from functools import total_ordering
-from typing import List
 
 winds = ["North", "East", "South", "West"]
 dragons = ["White", "Green", "Red"]
@@ -107,7 +106,7 @@ def consecutive(first: Tile, second: Tile) -> bool:
     return first.suit not in [Suit.WIND, Suit.DRAGON] and first.suit == second.suit and second.value == first.value + 1
 
 
-def remove_red_fives(hand: List[Tile]) -> List[Suit]:
+def remove_red_fives(hand: list[Tile]) -> list[Suit]:
     removed = []
     for i, tile in enumerate(hand):
         if tile.red_five:
@@ -116,14 +115,14 @@ def remove_red_fives(hand: List[Tile]) -> List[Suit]:
     return removed
 
 
-def add_red_fives(hand: List[Tile], to_add: List[Suit]):
+def add_red_fives(hand: list[Tile], to_add: list[Suit]):
     for i, tile in enumerate(hand):
         if tile.suit in to_add and tile.value == 5:
             hand[i] = Tile(tile.suit, 5, is_red_five=True)
             to_add.remove(tile.suit)
 
 
-def split_hand(hand: List[Tile]) -> (List[Tile], List[Tile], List[Tile], List[Tile]):
+def split_hand(hand: list[Tile]) -> (list[Tile], list[Tile], list[Tile], list[Tile]):
     m_tiles = [tile for tile in hand if tile.suit == Suit.MAN]
     p_tiles = [tile for tile in hand if tile.suit == Suit.PIN]
     s_tiles = [tile for tile in hand if tile.suit == Suit.SOU]
@@ -131,7 +130,7 @@ def split_hand(hand: List[Tile]) -> (List[Tile], List[Tile], List[Tile], List[Ti
     return m_tiles, p_tiles, s_tiles, honour_tiles
 
 
-def remove_tile_from_hand(hand: List[Tile], tile: Tile, n: int = 1) -> None:
+def remove_tile_from_hand(hand: list[Tile], tile: Tile, n: int = 1) -> None:
     tile_to_remove = Tile(tile.suit, tile.value)
     removed = remove_red_fives(hand)
 
@@ -141,7 +140,7 @@ def remove_tile_from_hand(hand: List[Tile], tile: Tile, n: int = 1) -> None:
     add_red_fives(hand, removed)
 
 
-def add_tile_to_hand(hand: List[Tile], tile: Tile) -> None:
+def add_tile_to_hand(hand: list[Tile], tile: Tile) -> None:
     hand.append(tile)
     hand.sort()
 
@@ -155,6 +154,7 @@ def tile_from_str(st: str) -> Tile | None:
         return Tile(Suit.WIND, st)
     if 2 <= len(st) <= 3:
         if st[0] in ['M', 'P', 'S'] and st[1].isnumeric() and 1 <= int(st[1]) <= 9:
+            suit = None
             match st[0]:
                 case 'M':
                     suit = Suit.MAN
@@ -169,7 +169,7 @@ def tile_from_str(st: str) -> Tile | None:
     return None
 
 
-def print_hand(hand: List[Tile], kan_tiles: List[Tile]):
+def print_hand(hand: list[Tile], kan_tiles: list[Tile]):
     m_tiles, p_tiles, s_tiles, honour_tiles = split_hand(hand)
     print(f"Hand: {m_tiles}, {p_tiles}, {s_tiles}, {honour_tiles}    Kan:", end=' ')
     for tile in kan_tiles:
@@ -201,7 +201,3 @@ dragon_copies = dragon_tiles*4
 
 all_tiles = [*man_tiles, *pin_tiles, *sou_tiles, *wind_tiles, *dragon_tiles]
 all_copies = [*man_copies, *pin_copies, *sou_copies, *wind_copies, *dragon_copies]
-
-
-
-

@@ -1,8 +1,8 @@
-from game.tiles import *
+from src.logic.tile import *
 from random import shuffle
 from typing import List
 from random import choice
-from game.winning_hand_checker import *
+from src.rules.winning_hand import *
 from time import sleep
 
 turns = ["left", "me", "right", "across"]
@@ -86,6 +86,7 @@ class GameState:
             self.next_player = "right"
 
         # DEBUG PURPOSES - great hand
+        '''
         self.hand = [Tile(Suit.WIND, "East") for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 3) for _ in range(2)]
         self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
@@ -98,6 +99,7 @@ class GameState:
         self.wall[0] = Tile(Suit.MAN, 9)
         self.wall[1+4] = Tile(Suit.WIND, "East")
         self.wall[5+3] = Tile(Suit.SOU, 7)
+        '''
 
         # DEBUG PURPOSES - kan testing
         '''
@@ -166,11 +168,11 @@ class GameState:
                 self.winning_yakus.append("Ippatsu")
 
         # get yakus first
-        for yaku in self.winning_yakus:
-            han = yaku_values[yaku]
-            if self.open_combos and yaku in yakus_cheaper_open_list:
+        for my_yaku in self.winning_yakus:
+            han = yaku_values[my_yaku]
+            if self.open_combos and my_yaku in yakus_cheaper_open_list:
                 han -= 1
-            self.final_scores.append((han, yaku))
+            self.final_scores.append((han, my_yaku))
 
         # then dora and red fives
         red_five_count, player_dora_count = 0, 0
@@ -264,7 +266,6 @@ class GameState:
                     waits = ready_hand(self.closed_tiles, self.kan_tiles, self.prevalent_wind, self.seat_wind,
                                        self.open_combos)
                     self.waits = waits
-                    if self.waits: print(f"{self.waits=}")
                     break
 
         self.next_draw = None

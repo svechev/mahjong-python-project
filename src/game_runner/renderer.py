@@ -1,7 +1,6 @@
-from game.tiles import Tile, Suit, all_tiles, winds, get_next_wind
-from game.game_state import GameState
+from src.logic.tile import Tile, Suit, all_tiles, get_next_wind
+from src.logic.game_state import GameState
 import pygame
-from typing import List, Tuple, Dict
 
 TILE_SIZE = (48, 64)
 SCREEN_WIDTH = 1280
@@ -17,10 +16,10 @@ class Renderer:
         self.image_back = pygame.image.load("assets/Back.png").convert_alpha()
         self.image_back = pygame.transform.smoothscale(self.image_back, TILE_SIZE)
 
-        self.tile_rects: List[Tuple[Tile, pygame.Rect]] = []
-        self.tile_images: Dict[Tile, pygame.Surface] = {}
+        self.tile_rects: list[tuple[Tile, pygame.Rect]] = []
+        self.tile_images: dict[Tile, pygame.Surface] = {}
         self.hovered_tile = None
-        self.button_rects: Dict[str, pygame.Rect] = {}
+        self.button_rects: dict[str, pygame.Rect] = {}
         self.restart_button_rect = pygame.Rect((SCREEN_WIDTH - 100, SCREEN_HEIGHT - 35), (100, 35))
 
         red_fives = []
@@ -286,7 +285,7 @@ class Renderer:
                 i = 0
                 row += 1
 
-    def draw_kan_tiles(self, kan_tiles: List[Tile], loc: tuple[int, int]) -> None:
+    def draw_kan_tiles(self, kan_tiles: list[Tile], loc: tuple[int, int]) -> None:
         x, y = loc
 
         for tile in kan_tiles:
@@ -347,7 +346,7 @@ class Renderer:
         # restart button
         self.draw_restart_button()
 
-        # game action buttons
+        # src action buttons
         if state.can_ron:
             draw_button("Ron", (200, 0, 0), y)
         if state.can_tsumo:
@@ -376,7 +375,6 @@ class Renderer:
         self.draw_text("Waits:", (x, y))
         y += 30
 
-        printed = 0
         for i in range(min(len(state.waits), 5)):
             curr_wait = state.waits[i]
             curr_x = x + i * TILE_SIZE[0]
