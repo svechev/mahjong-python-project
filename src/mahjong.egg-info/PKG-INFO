@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: mahjong
+Version: 0.1.0
+Summary: Single-player Riichi Mahjong game with pygame
+Requires-Python: >=3.9
+Requires-Dist: pygame>=2.0

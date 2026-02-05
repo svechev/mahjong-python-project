@@ -34,7 +34,7 @@ def get_triplets(suit: Suit, count: Counter, triplets: list[list[Tile]]) -> None
             count[tile] -= 3
 
 
-def get_combos(rest: list[Tile], sequences_first: bool) -> tuple[list[Tile], list[Tile]]:
+def get_combos(rest: list[Tile], sequences_first: bool) -> (list[Tile], list[Tile]):
     man, pin, sou, honours = split_hand(rest)
     sequences, triplets = [], []
     for suit_tiles in [man, pin, sou]:

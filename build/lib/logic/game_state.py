@@ -1,5 +1,6 @@
 from src.logic.tile import *
 from random import shuffle
+from typing import List
 from random import choice
 from src.rules.winning_hand import *
 from time import sleep
@@ -119,12 +120,12 @@ class GameState:
         self.dead_wall[0] = Tile(Suit.MAN, 9)
         '''
 
-    def get_dora_indicators(self) -> tuple[list[Tile], list[Tile]]:
+    def get_dora_indicators(self) -> (List[Tile], List[Tile]):
         open_dora_tiles, closed_dora_tiles = self.wall[:5], self.wall[5:10]
         self.wall = self.wall[10:]
         return open_dora_tiles, closed_dora_tiles
 
-    def get_starting_hand(self) -> list[Tile]:
+    def get_starting_hand(self) -> List[Tile]:
         starting_hand = self.wall[:13]
         self.wall = self.wall[13:]
         starting_hand.sort()
