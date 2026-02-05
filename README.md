@@ -61,7 +61,7 @@ Restart button is always available - during a round and after it's ended. It res
     - tile.py        - Tile objects
     - game_state.py    - Handles game state
   - rules/
-    - yaku_checker.py - Functions for yaku
+    - yaku.py - Functions for yaku
     - winning_hand.py - Check winning hands
 - tests/            - Unit tests for logic
   - test_tiles.py
