@@ -9,7 +9,7 @@ BG_COLOR = (30, 120, 30)
 
 
 class Renderer:
-    def __init__(self, screen) -> None:
+    def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
         self.font = pygame.font.Font(None, 32)
 
@@ -118,7 +118,7 @@ class Renderer:
             border_radius=6
         )
 
-    def draw_tile_glow(self, rect) -> None:
+    def draw_tile_glow(self, rect: pygame.Rect) -> None:
         highlight = pygame.Surface(rect.size, pygame.SRCALPHA)
         highlight.fill((255, 255, 0, 60))
         self.screen.blit(highlight, rect)
@@ -390,7 +390,7 @@ class Renderer:
 
     def draw_menu(self, state: GameState) -> None:
         self.screen.fill(BG_COLOR)
-        # DEBUG - MAYBE DON'T FILL THE ENTIRE SCREEN BUT CREATE DIFFERENT SIZE RECTANGLES FOR EACH CASE!!
+
         self.draw_restart_button()
 
         if not state.final_scores:  # draw

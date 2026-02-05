@@ -24,7 +24,7 @@ class Suit(Enum):
 
     @staticmethod
     def wind_tile_dora(indicator: str) -> str:
-        return winds[(winds.index(indicator) + 1) % 3]
+        return winds[(winds.index(indicator) + 1) % 4]
 
 
 @total_ordering
@@ -58,7 +58,7 @@ class Tile:
     def __repr__(self) -> str:
         return str(self)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.suit) + hash(self.value)
 
     def __eq__(self, other: Tile) -> bool:
@@ -80,7 +80,7 @@ class Tile:
         else:
             return False
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return True
 
     def is_honour(self) -> bool:
@@ -143,42 +143,6 @@ def remove_tile_from_hand(hand: list[Tile], tile: Tile, n: int = 1) -> None:
 def add_tile_to_hand(hand: list[Tile], tile: Tile) -> None:
     hand.append(tile)
     hand.sort()
-
-
-def tile_from_str(st: str) -> Tile | None:
-    if len(st) < 2:
-        return None
-    if st in dragons:
-        return Tile(Suit.DRAGON, st)
-    if st in winds:
-        return Tile(Suit.WIND, st)
-    if 2 <= len(st) <= 3:
-        if st[0] in ['M', 'P', 'S'] and st[1].isnumeric() and 1 <= int(st[1]) <= 9:
-            suit = None
-            match st[0]:
-                case 'M':
-                    suit = Suit.MAN
-                case 'P':
-                    suit = Suit.PIN
-                case 'S':
-                    suit = Suit.SOU
-            if len(st) == 2:
-                return Tile(suit, int(st[1]))
-            if len(st) == 3 and int(st[1]) == 5 and st[2] == '*':
-                return Tile(suit, 5, is_red_five=True)
-    return None
-
-
-def print_hand(hand: list[Tile], kan_tiles: list[Tile]):
-    m_tiles, p_tiles, s_tiles, honour_tiles = split_hand(hand)
-    print(f"Hand: {m_tiles}, {p_tiles}, {s_tiles}, {honour_tiles}    Kan:", end=' ')
-    for tile in kan_tiles:
-        if tile.value == 5:
-            tiles = [tile for _ in range(3)] + [Tile(tile.suit, 5, is_red_five=True)]
-            print(f"{tiles}")
-        else:
-            print(f"{[tile for _ in range(4)]}")
-    print()
 
 
 man_tiles = [Tile(Suit.MAN, i) for i in range(1, 10)]

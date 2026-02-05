@@ -11,7 +11,7 @@ def calculate_han(yakus: list[str]) -> int:
     return han
 
 
-def get_sequences(suit: Suit, count: Counter, sequences: list[list[Tile]]):
+def get_sequences(suit: Suit, count: Counter, sequences: list[list[Tile]]) -> None:
     for tile_1 in [Tile(suit, i) for i in range(1, 8)]:  # last possible start tile is 7
         tile_2 = tile_1.dora()
         tile_3 = tile_2.dora()
@@ -22,7 +22,7 @@ def get_sequences(suit: Suit, count: Counter, sequences: list[list[Tile]]):
             count[tile_3] -= 1
 
 
-def get_triplets(suit: Suit, count: Counter, triplets: list[list[Tile]]):
+def get_triplets(suit: Suit, count: Counter, triplets: list[list[Tile]]) -> None:
     if suit in [Suit.DRAGON, Suit.WIND]:
         possible_tiles = [tile for tile in [*dragon_tiles, *wind_tiles]]
     else:
@@ -62,7 +62,7 @@ def get_yakus(hand: list[Tile], kan_tiles: list[Tile], prev_wind: str, s_wind: s
               is_first_turn: bool = False,
               is_last_turn: bool = False,
               is_ron: bool = False,
-              num_waits: int = 1, num_kans: int = 1) -> (list[str]):
+              num_waits: int = 1, num_kans: int = 1) -> list[str]:
 
     removed = remove_red_fives(hand)
 
@@ -100,9 +100,6 @@ def get_yakus(hand: list[Tile], kan_tiles: list[Tile], prev_wind: str, s_wind: s
             if winning_combination(sequences, triplets, hand, rest, pair):
                 if not open_combos and not is_ron:
                     curr_yakus.append("Tsumo")  # means "fully concealed hand (and got the last tile by drawing it)"
-
-                # print(f"this is a winning combination: {hand=}, {open_combos=}")
-                # print(f"{triplets=}, {sequences=}, {pair=}")
 
                 # winning combination means the hand has 4 triplets/sequences and a pair, now we check all the yakus
                 pairs = []

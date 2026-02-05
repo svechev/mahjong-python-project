@@ -115,7 +115,7 @@ def seat_wind(triplets: list[list[Tile]], s_wind: str) -> bool:
     return False
 
 
-def four_big_winds(triplets: list[list[Tile]]):
+def four_big_winds(triplets: list[list[Tile]]) -> bool:
     wind_triplets = [triplet for triplet in triplets if triplet[0].suit == Suit.WIND]
     return len(wind_triplets) == 4
 
@@ -198,32 +198,6 @@ def pure_double_sequence(sequences: list[list[Tile]]) -> bool:
                 return True
 
     return False
-
-
-'''
-def mixed_triple_sequence(sequences: list[list[Tile]]) -> bool:
-    if len(sequences) < 3:
-        return False
-
-    common_sequence, count = -1, 1
-    for sequence in sequences:
-        if common_sequence == -1:  # set it
-            common_sequence = sequence[0].value
-        else:
-            if sequence[0].value != common_sequence and count == 1:
-                common_sequence = sequence[0].value
-            else:
-                count += 1
-
-    if count < 3:
-        return False
-
-    first_tiles = [sequence[0] for sequence in sequences]
-    man_condition = Tile(Suit.MAN, common_sequence) in first_tiles
-    pin_condition = Tile(Suit.PIN, common_sequence) in first_tiles
-    sou_condition = Tile(Suit.SOU, common_sequence) in first_tiles
-    return man_condition and pin_condition and sou_condition
-'''
 
 
 def mixed_triple_sequence(sequences: list[list[Tile]]) -> bool:

@@ -8,7 +8,7 @@ seat_wind = "South"
 
 
 class YakuTests(unittest.TestCase):
-    def test_01_triplets(self):
+    def test_01_triplets(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 3) for _ in range(3)] + [Tile(Suit.MAN, 4) for _ in range(3)]
         hand += [Tile(Suit.SOU, 4) for _ in range(3)]
@@ -39,7 +39,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Three concealed triplets" not in open_yakus_ron)
         self.assertTrue(len(open_yakus_ron) == 2)
 
-    def test_02_all_simples(self):
+    def test_02_all_simples(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, i) for i in range(3, 6)] + [Tile(Suit.MAN, 4) for _ in range(3)]
         hand += [Tile(Suit.PIN, 4) for _ in range(2)]
@@ -56,7 +56,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("All simples" in yakus)
         self.assertTrue(len(yakus) == 1)
 
-    def test_03_pinfu(self):
+    def test_03_pinfu(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, i) for i in range(3, 6)]
         hand += [Tile(Suit.MAN, i) for i in range(4, 7)]
@@ -78,7 +78,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Pinfu" not in yakus4)
         self.assertTrue("Pinfu" not in yakus5)
 
-    def test_04_seven_pairs(self):
+    def test_04_seven_pairs(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 9) for _ in range(2)]
         hand += [Tile(Suit.PIN, 5)] + [Tile(Suit.PIN, 5, is_red_five=True)]
@@ -95,7 +95,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Tsumo" in yakus)
         self.assertTrue(len(yakus) == 2)
 
-    def test_05_half_flush(self):
+    def test_05_half_flush(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 1) for _ in range(3)]
         hand += [Tile(Suit.MAN, 4) for _ in range(3)]
@@ -110,7 +110,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Tsumo" in yakus)
         self.assertTrue("Half flush" in yakus)
 
-    def test_06_full_flush(self):
+    def test_06_full_flush(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 2) for _ in range(3)]
         hand += [Tile(Suit.MAN, 3) for _ in range(2)]
@@ -126,7 +126,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Full flush" in yakus)
         self.assertTrue("All simples" in yakus)
 
-    def test_07_dragons(self):
+    def test_07_dragons(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 1) for _ in range(3)]
         hand += [Tile(Suit.MAN, 4) for _ in range(2)]
@@ -146,7 +146,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Green dragon" in yakus)
         self.assertTrue("Big three dragons" in yakus)
 
-    def test_08_big_winds(self):
+    def test_08_big_winds(self) -> None:
         # Arrange
         hand = [Tile(Suit.DRAGON, "Red") for _ in range(2)]
         hand += [Tile(Suit.WIND, "East") for _ in range(3)]
@@ -166,7 +166,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Four big winds" in yakus)
         self.assertTrue("Half outside hand" in yakus)
 
-    def test_09_little_winds(self):
+    def test_09_little_winds(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 1) for _ in range(3)]
         hand += [Tile(Suit.WIND, "East") for _ in range(2)]
@@ -186,7 +186,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Four little winds" in yakus)
         self.assertTrue("Half flush" in yakus)
 
-    def test_10_sequences(self):
+    def test_10_sequences(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, i) for i in range(1, 4)]
         hand += [Tile(Suit.MAN, i) for i in range(1, 4)]
@@ -204,7 +204,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Pure double sequence" in yakus)
         self.assertTrue(len(yakus) == 4)
 
-    def test_11_twice_pure_double_sequence(self):
+    def test_11_twice_pure_double_sequence(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 2) for _ in range(2)]
         hand += [Tile(Suit.MAN, 3) for _ in range(2)]
@@ -222,7 +222,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Twice pure double sequence" in yakus)
         self.assertTrue(len(yakus) == 2)
 
-    def test_12_thirteen_orphans(self):
+    def test_12_thirteen_orphans(self) -> None:
         # Arrange
         hand = [tile for tile in all_tiles if tile.is_honour() or tile.is_terminal()]
         hand.append(Tile(Suit.DRAGON, "Red"))
@@ -235,7 +235,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Thirteen orphans" in yakus)
         self.assertTrue(len(yakus) == 2)
 
-    def test_13_wait_thirteen_orphans(self):
+    def test_13_wait_thirteen_orphans(self) -> None:
         # Arrange
         hand = [tile for tile in all_tiles if tile.is_honour() or tile.is_terminal()]
         hand.append(Tile(Suit.DRAGON, "Red"))
@@ -248,7 +248,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Thirteen-wait thirteen orphans" in yakus)
         self.assertTrue(len(yakus) == 2)
 
-    def test_14_all_green(self):
+    def test_14_all_green(self) -> None:
         # Arrange
         hand = [Tile(Suit.SOU, 2) for _ in range(2)]
         hand += [Tile(Suit.SOU, 3) for _ in range(2)]
@@ -268,7 +268,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Green dragon" in yakus)
         self.assertTrue(len(yakus) == 5)
 
-    def test_15_complex_case(self):
+    def test_15_complex_case(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, i) for i in range(7, 10)]
         hand += [Tile(Suit.SOU, 5, is_red_five=True)]
@@ -286,7 +286,7 @@ class YakuTests(unittest.TestCase):
         self.assertTrue("Green dragon" in yakus)
         self.assertTrue(len(yakus) == 2)
 
-    def test_16_discard_for_ready_hand(self):
+    def test_16_discard_for_ready_hand(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, i) for i in range(7, 10)]
         hand += [Tile(Suit.SOU, 5, is_red_five=True)]
@@ -304,8 +304,7 @@ class YakuTests(unittest.TestCase):
         # Assert
         self.assertTrue(actual_discard == to_discard)
 
-    def test_17_ready_hand(self):
-        # Arrange
+    def test_17_ready_hand(self) -> None:
         # Arrange
         hand = [Tile(Suit.MAN, 9) for _ in range(2)]
         hand += [Tile(Suit.PIN, 5)] + [Tile(Suit.PIN, 5, is_red_five=True)]

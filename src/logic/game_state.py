@@ -13,7 +13,7 @@ def get_next_player(curr: str) -> str:
 
 
 class GameState:
-    def __init__(self):
+    def __init__(self) -> None:
         self.running = True
         self.round_ended = False
 
@@ -187,9 +187,6 @@ class GameState:
                     closed_kan_tiles.append(tile)
                 closed_kan_tiles.append(Tile(tile.suit, tile.value, is_red_five=True))
 
-        print(f"{closed_kan_tiles=}")
-        print(f"{self.open_dora_indicator[:self.unveiled_dora]=}")
-
         open_tiles = [tile for combo in self.open_combos for tile in combo]
 
         player_tiles = [*self.closed_tiles, *open_tiles, *closed_kan_tiles, self.winning_tile]
@@ -206,23 +203,12 @@ class GameState:
             self.final_scores.append((red_five_count, "Red five"))
 
         if self.riichi:
-            print(f"{self.closed_dora_indicator[self.unveiled_dora]=}")
             player_hidden_dora_count = 0
             closed_dora_tiles = [tile.dora() for tile in self.closed_dora_indicator[:self.unveiled_dora]]
             for tile in player_tiles:
                 player_hidden_dora_count += closed_dora_tiles.count(Tile(tile.suit, tile.value))
             if player_hidden_dora_count:
                 self.final_scores.append((player_hidden_dora_count, "Ura Dora"))
-        print(f"{self.final_scores=}")
-
-    # debug function
-    def print_buttons(self):
-        if self.can_ron:
-            print(f"{self.can_ron=} {self.winning_yakus=}")
-        if self.can_tsumo:
-            print(f"{self.can_tsumo=}, {self.winning_yakus}")
-        if self.can_riichi:
-            print(f"{self.discard_for_riichi=}")
 
     def has_buttons(self) -> bool:
         if self.can_tsumo or self.can_ron or self.can_kan or self.can_pon or self.can_chii:
@@ -381,8 +367,8 @@ class GameState:
             return
 
         removed = remove_red_fives(self.closed_tiles)
-        print(f"chii check: {self.closed_tiles=}, {potential_tile=}")
         tile_to_check = Tile(potential_tile.suit, potential_tile.value)  # if it was a red five we check a normal tile
+
         # check left
         if tile_to_check.value <= 7:
             next_tile = Tile(tile_to_check.suit, tile_to_check.value + 1)
@@ -404,8 +390,6 @@ class GameState:
             if prev_tile in self.closed_tiles and next_tile in self.closed_tiles:
                 self.can_chii.append("middle")
 
-        if self.can_chii:
-            print(f"{self.can_chii}")
         add_red_fives(self.closed_tiles, removed)
 
     def check_riichi(self, potential_tile: Tile) -> None:
@@ -423,14 +407,12 @@ class GameState:
     def clicked_ron(self) -> None:
         self.winning_tile = self.can_ron
         self.winning_method = "Ron"
-        print(f"{self.winning_yakus}")
         self.round_ended = True
         self.calculate_final_scores()
 
     def clicked_tsumo(self) -> None:
         self.winning_tile = self.can_tsumo
         self.winning_method = "Tsumo"
-        print(f"{self.winning_yakus}")
         self.round_ended = True
         self.calculate_final_scores()
 
