@@ -54,19 +54,25 @@ Restart button is always available - during a round and after it's ended. It res
 
 - assets/           - Images for tiles
 - src/
-  - game.py         - Main game logic
-  - gamestate.py    - Handles game state
-  - renderer.py     - Drawing code
-  - tiles.py        - Tile objects
-  - yaku_checker.py - Functions for yaku
-  - winning_hand_checker.py - Check winning hands
+  - game_runner/
+    - round.py        - Main game logic
+    - renderer.py     - Drawing code
+  - logic/
+    - tile.py        - Tile objects
+    - game_state.py    - Handles game state
+  - rules/
+    - yaku_checker.py - Functions for yaku
+    - winning_hand.py - Check winning hands
 - tests/            - Unit tests for logic
+  - test_tiles.py
+  - test_yakus.py  
 - main.py           - Starts the game
 - pyproject.toml    - Project metadata and dependencies
+- README.md  
 
 ## Dependencies
 
 - Python >= 3.10
 - Pygame >= 2.6
-- README.md        
+      
 
