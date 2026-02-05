@@ -20,7 +20,7 @@ python -m venv venv
 
 for Linux / macOS:
 ```bash
-source venv/bin/activate 
+source venv/bin/activate # Linux / macOS
 ```
 
 for Windows:
@@ -60,21 +60,21 @@ Restart button is always available - during a round and after it's ended. It res
 
 ## Project Structure
 
-- assets/           # Images for tiles
+- assets/           - Images for tiles
 - game/
-  - game.py         # Main game logic
-  - gamestate.py    # Handles game state
-  - renderer.py     # Drawing code
-  - tiles.py        # Tile objects
-  - yaku_checker.py # Functions for yaku
-  - winning_hand_checker.py # Check winning hands
-- tests/            # Unit tests for logic
-- main.py           # Starts the game
-- pyproject.toml    # Project metadata and dependencies
+  - game.py         - Main game logic
+  - gamestate.py    - Handles game state
+  - renderer.py     - Drawing code
+  - tiles.py        - Tile objects
+  - yaku_checker.py - Functions for yaku
+  - winning_hand_checker.py - Check winning hands
+- tests/            - Unit tests for logic
+- main.py           - Starts the game
+- pyproject.toml    - Project metadata and dependencies
 
 ## Dependencies
 
 - Python >= 3.10
 - Pygame >= 2.6
-- README.md         # Project information
+- README.md        
 
