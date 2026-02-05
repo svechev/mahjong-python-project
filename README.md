@@ -7,22 +7,32 @@ Play against simple bots that discard the tile they draw. Supports Riichi rules 
 
 1. Clone the repository:
 
+```bash
 git clone https://github.com/svechev/mahjong-python-project
 cd mahjong-python-project
+```
 
 2. Create a virtual environment:
 
+```bash
 python -m venv venv
+```
 
 for Linux / macOS:
+```bash
 source venv/bin/activate 
+```
 
 for Windows:
+```bash
 venv\Scripts\activate
+```
 
 3. Install dependencies:
-4. 
+
+```bash
 pip install .
+```
 
 ## Usage
 
@@ -30,6 +40,7 @@ Run the game with:
 
 ```bash
 python main.py
+```
 
 ### Gameplay
 
