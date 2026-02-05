@@ -53,7 +53,7 @@ Restart button is always available - during a round and after it's ended. It res
 ## Project Structure
 
 - assets/           - Images for tiles
-- game/
+- src/
   - game.py         - Main game logic
   - gamestate.py    - Handles game state
   - renderer.py     - Drawing code
