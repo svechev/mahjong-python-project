@@ -16,16 +16,8 @@ cd mahjong-python-project
 
 ```bash
 python -m venv venv
-```
-
-for Linux / macOS:
-```bash
 source venv/bin/activate # Linux / macOS
-```
-
-for Windows:
-```bash
-venv\Scripts\activate
+venv\Scripts\activate # Windows
 ```
 
 3. Install dependencies:
