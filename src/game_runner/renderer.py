@@ -164,12 +164,12 @@ class Renderer:
 
         pygame.display.flip()
 
-    def draw_table_info(self, state: GameState) -> None:  # the middle - winds, score and the top - dora indicators
+    def draw_table_info(self, state: GameState) -> None:  # the middle - winds and tiles left, and the top - dora indicators
         # dora indicators:
         dora_loc = SCREEN_WIDTH - TILE_SIZE[0] * 5, 5
         self.draw_dora_indicators(dora_loc, state.open_dora_indicator, state.unveiled_dora)
 
-        # winds:
+        # draw middle info:
         info_rect = pygame.Rect((450, 250), (100, 100))
         pygame.draw.rect(self.screen, (30, 120, 30), info_rect, border_radius=8)
         pygame.draw.rect(self.screen, (255, 255, 255), info_rect, width=3, border_radius=8)
@@ -346,7 +346,7 @@ class Renderer:
         # restart button
         self.draw_restart_button()
 
-        # src action buttons
+        # action buttons
         if state.can_ron:
             draw_button("Ron", (200, 0, 0), y)
         if state.can_tsumo:
