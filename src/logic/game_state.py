@@ -84,41 +84,6 @@ class GameState:
         elif self.seat_wind == w4:
             self.next_player = "right"
 
-        # DEBUG PURPOSES - great hand
-        '''
-        self.hand = [Tile(Suit.WIND, "East") for _ in range(2)]
-        self.hand += [Tile(Suit.MAN, 3) for _ in range(2)]
-        self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
-        self.hand += [Tile(Suit.MAN, i) for i in range(5, 7)]
-        self.hand += [Tile(Suit.MAN, 7) for _ in range(3)]
-        self.hand += [Tile(Suit.MAN, 9)]
-        self.hand[3] = Tile(Suit.MAN, 5, is_red_five=True)
-        self.hand.sort()
-        self.closed_tiles = self.hand.copy()
-        self.wall[0] = Tile(Suit.MAN, 9)
-        self.wall[1+4] = Tile(Suit.WIND, "East")
-        self.wall[5+3] = Tile(Suit.SOU, 7)
-        '''
-
-        # DEBUG PURPOSES - kan testing
-        '''
-        self.hand = [Tile(Suit.SOU, 5) for _ in range(2)]
-        self.hand += [Tile(Suit.SOU, 6) for _ in range(2)]
-        self.hand[0] = Tile(Suit.SOU, 5, is_red_five=True)
-        self.hand += [Tile(Suit.MAN, 3) for _ in range(1)]
-        self.hand += [Tile(Suit.MAN, 4) for _ in range(3)]
-        self.hand += [Tile(Suit.MAN, i) for i in range(5, 8)]
-        self.hand += [Tile(Suit.PIN, 7) for _ in range(2)]
-        self.hand[8] = Tile(Suit.MAN, 5, is_red_five=True)
-        self.hand.sort()
-        self.closed_tiles = self.hand.copy()
-        self.wall[0] = Tile(Suit.SOU, 5)
-        self.wall[1] = Tile(Suit.MAN, 7)
-        self.wall[4] = Tile(Suit.SOU, 5)
-        self.wall[5] = Tile(Suit.MAN, 4)
-        self.dead_wall[0] = Tile(Suit.MAN, 9)
-        '''
-
     def get_dora_indicators(self) -> tuple[list[Tile], list[Tile]]:
         open_dora_tiles, closed_dora_tiles = self.wall[:5], self.wall[5:10]
         self.wall = self.wall[10:]
