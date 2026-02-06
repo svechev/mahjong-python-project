@@ -164,7 +164,7 @@ class Renderer:
 
         pygame.display.flip()
 
-    def draw_table_info(self, state: GameState) -> None:  # the middle - winds and tiles left, and the top - dora indicators
+    def draw_table_info(self, state: GameState) -> None:  
         # dora indicators:
         dora_loc = SCREEN_WIDTH - TILE_SIZE[0] * 5, 5
         self.draw_dora_indicators(dora_loc, state.open_dora_indicator, state.unveiled_dora)
