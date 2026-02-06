@@ -90,7 +90,7 @@ class Round:
                                     case "Skip":
                                         self.state.clicked_skip()
 
-                                if action != "Skip":  # inspect riichi when you add it
+                                if action != "Skip": 
                                     self.state.next_player = "me"
                                     if action == "Kan":
                                         self.state.waits_action = False
