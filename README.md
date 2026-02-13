@@ -34,7 +34,7 @@ Run the game with:
 python main.py
 ```
 
-### Gameplay
+## Gameplay
 
 Click on a tile in your hand to discard when it's your turn.
 Buttons appear for Pon, Chii, Kan, Riichi, and Tsumo when applicable.
